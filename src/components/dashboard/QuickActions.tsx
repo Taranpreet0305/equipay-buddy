@@ -1,17 +1,17 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Plus, Users, QrCode, Scan } from 'lucide-react';
+import { Plus, Users, Globe, Scan } from 'lucide-react';
 
 const actions = [
-  { icon: Plus, label: 'Add Expense', path: '/add-expense', color: 'bg-primary' },
-  { icon: Users, label: 'New Group', path: '/groups/new', color: 'bg-accent' },
-  { icon: QrCode, label: 'Request', path: '/request', color: 'bg-success' },
-  { icon: Scan, label: 'Scan Bill', path: '/scan', color: 'bg-warning' },
+  { icon: Plus, label: 'Add', path: '/add-expense', color: 'bg-primary' },
+  { icon: Users, label: 'Group', path: '/groups/new', color: 'bg-accent' },
+  { icon: Globe, label: 'Convert', path: '/convert', color: 'bg-success' },
+  { icon: Scan, label: 'Scan', path: '/scan', color: 'bg-warning' },
 ];
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-4 gap-2 sm:gap-3">
       {actions.map((action, index) => {
         const Icon = action.icon;
         return (
@@ -23,16 +23,16 @@ export function QuickActions() {
           >
             <Link
               to={action.path}
-              className="flex flex-col items-center gap-2"
+              className="flex flex-col items-center gap-1.5 sm:gap-2"
             >
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`w-14 h-14 rounded-2xl ${action.color} flex items-center justify-center shadow-soft`}
+                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${action.color} flex items-center justify-center shadow-soft`}
               >
-                <Icon className="w-6 h-6 text-primary-foreground" />
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
               </motion.div>
-              <span className="text-xs font-medium text-muted-foreground text-center">
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground text-center">
                 {action.label}
               </span>
             </Link>
