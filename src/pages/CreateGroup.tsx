@@ -1,88 +1,99 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Plus, X, UserPlus, Search } from 'lucide-react';
+import { ArrowLeft, Plus, X, UserPlus, Search, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { GroupMember } from '@/types';
-
-// Mock users for search
-const mockUsers = [
-  { id: '2', displayName: 'Sarah Wilson', email: 'sarah@equipay.com', photoURL: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face' },
-  { id: '3', displayName: 'Mike Chen', email: 'mike@equipay.com', photoURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face' },
-  { id: '4', displayName: 'Emma Davis', email: 'emma@equipay.com', photoURL: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face' },
-  { id: '5', displayName: 'Tom Brown', email: 'tom@equipay.com', photoURL: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face' },
-];
+import { createGroup, addGroupMember, searchProfiles, ProfileDB } from '@/lib/database';
 
 export default function CreateGroup() {
   const navigate = useNavigate();
-  const { user, addGroup } = useApp();
+  const { user, profile, refreshGroups } = useAuth();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMembers, setSelectedMembers] = useState<GroupMember[]>([
-    {
-      id: '1',
-      userId: user?.id || '1',
-      displayName: user?.displayName || 'You',
-      email: user?.email || '',
-      photoURL: user?.photoURL,
-      balance: 0,
-    },
-  ]);
-
-  const filteredUsers = mockUsers.filter(
-    (u) =>
-      !selectedMembers.find((m) => m.userId === u.id) &&
-      (u.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  const [searchResults, setSearchResults] = useState<ProfileDB[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<ProfileDB[]>(
+    profile ? [profile] : []
   );
+  const [isCreating, setIsCreating] = useState(false);
 
-  const addMember = (userData: typeof mockUsers[0]) => {
-    const newMember: GroupMember = {
-      id: userData.id,
-      userId: userData.id,
-      displayName: userData.displayName,
-      email: userData.email,
-      photoURL: userData.photoURL,
-      balance: 0,
-    };
-    setSelectedMembers([...selectedMembers, newMember]);
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    const excludeIds = selectedMembers.map(m => m.user_id);
+    const { data, error } = await searchProfiles(query, excludeIds);
+    
+    if (data) {
+      setSearchResults(data);
+    }
+    setIsSearching(false);
+  };
+
+  const addMember = (member: ProfileDB) => {
+    setSelectedMembers([...selectedMembers, member]);
     setSearchQuery('');
+    setSearchResults([]);
   };
 
   const removeMember = (userId: string) => {
     if (userId === user?.id) return; // Can't remove yourself
-    setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
+    setSelectedMembers(selectedMembers.filter((m) => m.user_id !== userId));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim()) {
       toast.error('Please enter a group name');
       return;
     }
 
-    if (selectedMembers.length < 2) {
-      toast.error('Please add at least one other member');
+    if (!user) {
+      toast.error('Please sign in to create a group');
       return;
     }
 
-    addGroup({
-      name,
-      description,
-      createdBy: user?.id || '1',
-      members: selectedMembers,
-    });
+    setIsCreating(true);
+    try {
+      // Create the group
+      const { data: group, error: groupError } = await createGroup(
+        name,
+        description || null,
+        user.id
+      );
 
-    toast.success('Group created successfully!');
-    navigate('/groups');
+      if (groupError || !group) {
+        throw groupError || new Error('Failed to create group');
+      }
+
+      // Add other members
+      const otherMembers = selectedMembers.filter(m => m.user_id !== user.id);
+      for (const member of otherMembers) {
+        await addGroupMember(group.id, member.user_id);
+      }
+
+      await refreshGroups();
+      toast.success('Group created successfully!');
+      navigate(`/groups/${group.id}`);
+    } catch (error) {
+      console.error('Error creating group:', error);
+      toast.error('Failed to create group');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -153,50 +164,52 @@ export default function CreateGroup() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search by name or email..."
                 className="pl-10 h-12 rounded-xl"
               />
+              {isSearching && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground animate-spin" />
+              )}
             </div>
 
             {/* Search Results */}
             <AnimatePresence>
-              {searchQuery && (
+              {searchResults.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className="bg-card rounded-xl shadow-elevated border border-border/50 overflow-hidden"
                 >
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((userData) => (
-                      <button
-                        key={userData.id}
-                        onClick={() => addMember(userData)}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors"
-                      >
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={userData.photoURL} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {userData.displayName.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 text-left">
-                          <p className="font-medium text-foreground">{userData.displayName}</p>
-                          <p className="text-xs text-muted-foreground">{userData.email}</p>
-                        </div>
-                        <UserPlus className="w-5 h-5 text-primary" />
-                      </button>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-muted-foreground">
-                      <p className="text-sm">No users found</p>
-                      <p className="text-xs mt-1">Invite them by email instead</p>
-                    </div>
-                  )}
+                  {searchResults.map((userData) => (
+                    <button
+                      key={userData.id}
+                      onClick={() => addMember(userData)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors"
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={userData.photo_url || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {userData.display_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium text-foreground">{userData.display_name}</p>
+                        <p className="text-xs text-muted-foreground">{userData.email}</p>
+                      </div>
+                      <UserPlus className="w-5 h-5 text-primary" />
+                    </button>
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
+              <p className="text-sm text-muted-foreground text-center py-3">
+                No users found. They can join later!
+              </p>
+            )}
           </div>
 
           {/* Selected Members */}
@@ -207,30 +220,30 @@ export default function CreateGroup() {
             <div className="space-y-2">
               {selectedMembers.map((member, index) => (
                 <motion.div
-                  key={member.userId}
+                  key={member.user_id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="flex items-center gap-3 bg-secondary rounded-xl p-3"
                 >
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={member.photoURL} />
+                    <AvatarImage src={member.photo_url || undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary">
-                      {member.displayName.charAt(0)}
+                      {member.display_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <p className="font-medium text-foreground">
-                      {member.displayName}
-                      {member.userId === user?.id && (
+                      {member.display_name}
+                      {member.user_id === user?.id && (
                         <span className="text-xs text-muted-foreground ml-2">(You)</span>
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">{member.email}</p>
                   </div>
-                  {member.userId !== user?.id && (
+                  {member.user_id !== user?.id && (
                     <button
-                      onClick={() => removeMember(member.userId)}
+                      onClick={() => removeMember(member.user_id)}
                       className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center"
                     >
                       <X className="w-4 h-4 text-destructive" />
@@ -242,8 +255,18 @@ export default function CreateGroup() {
           </div>
 
           {/* Submit Button */}
-          <Button onClick={handleSubmit} variant="gradient" size="xl" className="w-full">
-            Create Group
+          <Button 
+            onClick={handleSubmit} 
+            variant="gradient" 
+            size="xl" 
+            className="w-full"
+            disabled={isCreating}
+          >
+            {isCreating ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              'Create Group'
+            )}
           </Button>
         </motion.div>
       </div>

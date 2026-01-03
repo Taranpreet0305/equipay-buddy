@@ -14,7 +14,326 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      expense_splits: {
+        Row: {
+          amount: number
+          created_at: string
+          expense_id: string
+          id: string
+          is_paid: boolean
+          percentage: number | null
+          shares: number | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          expense_id: string
+          id?: string
+          is_paid?: boolean
+          percentage?: number | null
+          shares?: number | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expense_id?: string
+          id?: string
+          is_paid?: boolean
+          percentage?: number | null
+          shares?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_splits_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_splits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string
+          group_id: string
+          id: string
+          is_settled: boolean
+          notes: string | null
+          paid_by: string
+          receipt_url: string | null
+          split_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description: string
+          group_id: string
+          id?: string
+          is_settled?: boolean
+          notes?: string | null
+          paid_by: string
+          receipt_url?: string | null
+          split_type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          group_id?: string
+          id?: string
+          is_settled?: boolean
+          notes?: string | null
+          paid_by?: string
+          receipt_url?: string | null
+          split_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          phone: string | null
+          photo_url: string | null
+          updated_at: string
+          upi_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          email: string
+          id?: string
+          phone?: string | null
+          photo_url?: string | null
+          updated_at?: string
+          upi_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          phone?: string | null
+          photo_url?: string | null
+          updated_at?: string
+          upi_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      settlements: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          from_user_id: string
+          group_id: string
+          id: string
+          method: string
+          status: string
+          to_user_id: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          from_user_id: string
+          group_id: string
+          id?: string
+          method?: string
+          status?: string
+          to_user_id: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          from_user_id?: string
+          group_id?: string
+          id?: string
+          method?: string
+          status?: string
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settlements_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "settlements_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "settlements_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

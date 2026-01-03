@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,10 +16,12 @@ import {
   ChevronRight,
   TrendingUp,
   Receipt,
-  Wallet
+  Wallet,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { updateProfile } from '@/lib/database';
 
 const menuItems = [
   { icon: CreditCard, label: 'Payment Methods', path: '/payment-methods' },
@@ -29,21 +31,48 @@ const menuItems = [
 ];
 
 export default function Profile() {
-  const { user, logout } = useApp();
+  const { user, profile, groups, logout, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [upiId, setUpiId] = useState(user?.upiId || '');
+  const [upiId, setUpiId] = useState(profile?.upi_id || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleSaveUPI = () => {
-    toast.success('UPI ID updated successfully!');
-    setIsEditing(false);
+  const handleSaveUPI = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await updateProfile(user.id, { upi_id: upiId });
+      if (error) throw error;
+      
+      await refreshProfile();
+      toast.success('UPI ID updated successfully!');
+      setIsEditing(false);
+    } catch (error) {
+      toast.error('Failed to update UPI ID');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Mock analytics
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Failed to log out');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  // Analytics
   const analytics = {
-    totalExpenses: 68500,
-    totalPaid: 45000,
-    groupsCount: 3,
-    settledCount: 12,
+    totalExpenses: 0,
+    totalPaid: 0,
+    groupsCount: groups.length,
+    settledCount: 0,
   };
 
   return (
@@ -58,18 +87,20 @@ export default function Profile() {
           >
             <div className="relative inline-block">
               <Avatar className="w-24 h-24 border-4 border-white/20">
-                <AvatarImage src={user?.photoURL} />
+                <AvatarImage src={profile?.photo_url || undefined} />
                 <AvatarFallback className="text-2xl bg-white/20">
-                  {user?.displayName?.charAt(0)}
+                  {profile?.display_name?.charAt(0) || user?.email?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center">
                 <Camera className="w-4 h-4" />
               </button>
             </div>
-            <h1 className="text-2xl font-bold mt-4">{user?.displayName}</h1>
+            <h1 className="text-2xl font-bold mt-4">{profile?.display_name || 'User'}</h1>
             <p className="text-sm opacity-80">{user?.email}</p>
-            <p className="text-sm opacity-60 mt-1">{user?.phone}</p>
+            {profile?.phone && (
+              <p className="text-sm opacity-60 mt-1">{profile.phone}</p>
+            )}
           </motion.div>
         </div>
 
@@ -143,12 +174,14 @@ export default function Profile() {
                   placeholder="yourname@upi"
                   className="flex-1 h-11 rounded-xl"
                 />
-                <Button onClick={handleSaveUPI} variant="gradient">
-                  Save
+                <Button onClick={handleSaveUPI} variant="gradient" disabled={isSaving}>
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
                 </Button>
               </div>
             ) : (
-              <p className="text-foreground font-medium">{upiId || 'Not set'}</p>
+              <p className="text-foreground font-medium">
+                {profile?.upi_id || 'Not set'}
+              </p>
             )}
             <p className="text-xs text-muted-foreground mt-2">
               Used for receiving payments from group members
@@ -188,12 +221,19 @@ export default function Profile() {
             transition={{ delay: 0.4 }}
           >
             <Button
-              onClick={logout}
+              onClick={handleLogout}
               variant="ghost"
               className="w-full h-12 text-destructive hover:text-destructive hover:bg-destructive/10"
+              disabled={isLoggingOut}
             >
-              <LogOut className="w-5 h-5" />
-              Log Out
+              {isLoggingOut ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <LogOut className="w-5 h-5" />
+                  Log Out
+                </>
+              )}
             </Button>
           </motion.div>
         </div>

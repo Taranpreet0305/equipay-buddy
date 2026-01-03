@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,18 +14,45 @@ import {
   TrendingUp, 
   TrendingDown,
   MessageCircle,
-  CreditCard
+  CreditCard,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
+import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
 
 export default function GroupDetail() {
   const { id } = useParams();
-  const { groups, expenses } = useApp();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('expenses');
+  const [group, setGroup] = useState<GroupDB | null>(null);
+  const [members, setMembers] = useState<GroupMemberDB[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseDB[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const group = groups.find(g => g.id === id);
-  const groupExpenses = expenses.filter(e => e.groupId === id);
+  useEffect(() => {
+    if (id) {
+      setIsLoading(true);
+      Promise.all([
+        getGroupWithMembers(id),
+        getGroupExpenses(id)
+      ]).then(([groupResult, expensesResult]) => {
+        if (groupResult.group) setGroup(groupResult.group);
+        if (groupResult.members) setMembers(groupResult.members);
+        if (expensesResult.data) setExpenses(expensesResult.data);
+        setIsLoading(false);
+      });
+    }
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </PageLayout>
+    );
+  }
 
   if (!group) {
     return (
@@ -36,9 +63,6 @@ export default function GroupDetail() {
       </PageLayout>
     );
   }
-
-  const userBalance = group.members[0]?.balance || 0;
-  const isPositive = userBalance >= 0;
 
   return (
     <PageLayout>
@@ -73,29 +97,7 @@ export default function GroupDetail() {
               <Users className="w-8 h-8" />
             </div>
             <h1 className="text-2xl font-bold mb-1">{group.name}</h1>
-            <p className="text-sm opacity-80">{group.members.length} members</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4"
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm opacity-80">Your balance</p>
-                <p className={`text-2xl font-bold ${isPositive ? 'text-success-foreground' : ''}`}>
-                  {isPositive ? '+' : '-'}₹{Math.abs(userBalance).toLocaleString('en-IN')}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="glass" size="sm" className="text-primary-foreground border-white/20">
-                  <CreditCard className="w-4 h-4" />
-                  Settle
-                </Button>
-              </div>
-            </div>
+            <p className="text-sm opacity-80">{members.length} members</p>
           </motion.div>
         </div>
 
@@ -121,96 +123,66 @@ export default function GroupDetail() {
                 </Button>
               </Link>
 
-              {groupExpenses.map((expense, index) => (
-                <motion.div
-                  key={expense.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-card rounded-xl p-4 shadow-soft border border-border/50"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-semibold text-foreground">{expense.description}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Paid by {expense.paidByName}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-foreground">
-                        ₹{expense.amount.toLocaleString('en-IN')}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(expense.createdAt, { addSuffix: true })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 mt-3">
-                    {expense.splitDetails.map((split) => (
-                      <div
-                        key={split.userId}
-                        className="flex-1 bg-secondary rounded-lg p-2 text-center"
-                      >
-                        <p className="text-xs text-muted-foreground truncate">{split.displayName.split(' ')[0]}</p>
-                        <p className="text-sm font-medium text-foreground">
-                          ₹{split.amount.toFixed(0)}
+              {expenses.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No expenses yet. Add your first expense!
+                </div>
+              ) : (
+                expenses.map((expense) => (
+                  <motion.div
+                    key={expense.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-card rounded-xl p-4 shadow-soft border border-border/50"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-foreground">{expense.description}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Paid by {expense.profiles?.display_name || 'Unknown'}
                         </p>
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+                      <p className="font-bold text-foreground">
+                        ₹{Number(expense.amount).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </TabsContent>
 
             <TabsContent value="balances" className="mt-4 space-y-3">
-              {group.members.map((member, index) => (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-card rounded-xl p-4 shadow-soft border border-border/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={member.photoURL} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {member.displayName.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground">{member.displayName}</p>
-                      <p className="text-sm text-muted-foreground">{member.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        {member.balance >= 0 ? (
-                          <TrendingUp className="w-4 h-4 text-success" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 text-destructive" />
-                        )}
-                        <span className={`font-bold ${member.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                          {member.balance >= 0 ? '+' : '-'}₹{Math.abs(member.balance).toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {member.balance >= 0 ? 'gets back' : 'owes'}
-                      </p>
-                    </div>
-                  </div>
+              {members.map((member) => {
+                const profile = member.profiles;
+                if (!profile) return null;
 
-                  {member.balance !== 0 && member.userId !== '1' && (
-                    <div className="mt-3 pt-3 border-t border-border flex gap-2">
-                      <Button variant="ghost" size="sm" className="flex-1">
-                        Remind
-                      </Button>
-                      <Button variant="gradient" size="sm" className="flex-1">
-                        Settle Up
-                      </Button>
+                return (
+                  <motion.div
+                    key={member.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="bg-card rounded-xl p-4 shadow-soft border border-border/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={profile.photo_url || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {profile.display_name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground">
+                          {profile.display_name}
+                          {member.user_id === user?.id && (
+                            <span className="text-xs text-muted-foreground ml-2">(You)</span>
+                          )}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{profile.email}</p>
+                      </div>
                     </div>
-                  )}
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </TabsContent>
           </Tabs>
         </div>

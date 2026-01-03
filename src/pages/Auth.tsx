@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useApp } from '@/contexts/AppContext';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { signUpWithEmail, signInWithEmail, signInWithGoogle } from '@/lib/database';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useApp();
   
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -21,20 +20,47 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    if (!isLogin && !name) {
+      toast.error('Please enter your name');
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
       if (isLogin) {
-        await login(email, password);
+        const { error } = await signInWithEmail(email, password);
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast.error('Invalid email or password');
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
         toast.success('Welcome back!');
+        navigate('/dashboard');
       } else {
-        // Mock signup
-        await login(email, password);
+        const { error } = await signUpWithEmail(email, password, name);
+        if (error) {
+          if (error.message.includes('already registered')) {
+            toast.error('This email is already registered. Please sign in.');
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
         toast.success('Account created successfully!');
+        navigate('/dashboard');
       }
-      navigate('/dashboard');
     } catch (error) {
-      toast.error('Authentication failed. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -43,9 +69,11 @@ export default function Auth() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
-      toast.success('Welcome!');
-      navigate('/dashboard');
+      const { error } = await signInWithGoogle();
+      if (error) {
+        toast.error(error.message);
+      }
+      // Redirect is handled by Supabase OAuth
     } catch (error) {
       toast.error('Google login failed. Please try again.');
     } finally {
@@ -113,6 +141,7 @@ export default function Auth() {
                     placeholder="John Doe"
                     className="pl-10 h-12 rounded-xl"
                     required={!isLogin}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -129,6 +158,7 @@ export default function Auth() {
                   placeholder="you@example.com"
                   className="pl-10 h-12 rounded-xl"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -144,6 +174,8 @@ export default function Auth() {
                   placeholder="••••••••"
                   className="pl-10 pr-10 h-12 rounded-xl"
                   required
+                  disabled={isLoading}
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -153,6 +185,9 @@ export default function Auth() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {!isLogin && (
+                <p className="text-xs text-muted-foreground">Password must be at least 6 characters</p>
+              )}
             </div>
 
             {isLogin && (
@@ -169,7 +204,7 @@ export default function Auth() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
                   {isLogin ? 'Sign In' : 'Create Account'}
