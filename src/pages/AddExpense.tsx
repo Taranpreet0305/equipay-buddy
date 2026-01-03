@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,13 +27,15 @@ import {
   Home, 
   Plane, 
   Heart, 
-  MoreHorizontal 
+  MoreHorizontal,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ExpenseCategory, SplitDetail } from '@/types';
 import { toast } from 'sonner';
+import { createExpense, getGroupWithMembers, GroupMemberDB } from '@/lib/database';
+import { ScanReceiptDialog } from '@/components/expense/ScanReceiptDialog';
 
-const categories: { value: ExpenseCategory; label: string; icon: any }[] = [
+const categories = [
   { value: 'food', label: 'Food & Drinks', icon: Utensils },
   { value: 'transport', label: 'Transport', icon: Car },
   { value: 'shopping', label: 'Shopping', icon: ShoppingBag },
@@ -54,25 +56,43 @@ const splitTypes = [
 
 export default function AddExpense() {
   const navigate = useNavigate();
-  const { groups, user, addExpense } = useApp();
+  const { user, groups, refreshGroups } = useAuth();
 
   const [selectedGroup, setSelectedGroup] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<ExpenseCategory>('other');
+  const [category, setCategory] = useState('other');
   const [splitType, setSplitType] = useState<'equal' | 'exact' | 'percentage' | 'shares'>('equal');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const [groupMembers, setGroupMembers] = useState<GroupMemberDB[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showScanDialog, setShowScanDialog] = useState(false);
 
-  const currentGroup = groups.find(g => g.id === selectedGroup);
+  // Load group members when group is selected
+  useEffect(() => {
+    if (selectedGroup) {
+      setIsLoading(true);
+      getGroupWithMembers(selectedGroup).then(({ members }) => {
+        if (members) {
+          setGroupMembers(members);
+          // Select all members by default
+          setSelectedMembers(members.map(m => m.user_id));
+        }
+        setIsLoading(false);
+      });
+    } else {
+      setGroupMembers([]);
+      setSelectedMembers([]);
+    }
+  }, [selectedGroup]);
 
   const handleSelectAll = () => {
-    if (currentGroup) {
-      if (selectedMembers.length === currentGroup.members.length) {
-        setSelectedMembers([]);
-      } else {
-        setSelectedMembers(currentGroup.members.map(m => m.userId));
-      }
+    if (selectedMembers.length === groupMembers.length) {
+      setSelectedMembers([]);
+    } else {
+      setSelectedMembers(groupMembers.map(m => m.user_id));
     }
   };
 
@@ -84,41 +104,64 @@ export default function AddExpense() {
     );
   };
 
-  const handleSubmit = () => {
+  const handleScanComplete = (data: {
+    amount: number;
+    currency: string;
+    description: string;
+    category: string;
+  }) => {
+    setAmount(data.amount.toString());
+    setDescription(data.description);
+    setCategory(data.category);
+  };
+
+  const handleSubmit = async () => {
     if (!selectedGroup || !description || !amount || selectedMembers.length === 0) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    const amountNum = parseFloat(amount);
-    const splitAmount = amountNum / selectedMembers.length;
+    if (!user) {
+      toast.error('Please sign in to add an expense');
+      return;
+    }
 
-    const splitDetails: SplitDetail[] = selectedMembers.map(userId => {
-      const member = currentGroup?.members.find(m => m.userId === userId);
-      return {
-        userId,
-        displayName: member?.displayName || 'Unknown',
-        amount: splitAmount,
-        isPaid: userId === user?.id,
-      };
-    });
+    setIsSubmitting(true);
 
-    addExpense({
-      groupId: selectedGroup,
-      description,
-      amount: amountNum,
-      currency: 'INR',
-      paidBy: user?.id || '',
-      paidByName: user?.displayName || '',
-      splitType,
-      splitDetails,
-      category,
-      notes,
-      isSettled: false,
-    });
+    try {
+      const amountNum = parseFloat(amount);
+      const splitAmount = amountNum / selectedMembers.length;
 
-    toast.success('Expense added successfully!');
-    navigate(-1);
+      const splits = selectedMembers.map(userId => {
+        const member = groupMembers.find(m => m.user_id === userId);
+        return {
+          userId,
+          amount: splitAmount,
+        };
+      });
+
+      const { error } = await createExpense(
+        selectedGroup,
+        description,
+        amountNum,
+        user.id,
+        splitType,
+        category,
+        splits,
+        notes || undefined
+      );
+
+      if (error) throw error;
+
+      await refreshGroups();
+      toast.success('Expense added successfully!');
+      navigate(-1);
+    } catch (error) {
+      console.error('Error creating expense:', error);
+      toast.error('Failed to add expense');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -161,7 +204,10 @@ export default function AddExpense() {
                 className="text-4xl font-bold text-foreground bg-transparent border-none outline-none text-center w-40"
               />
             </div>
-            <button className="mt-3 flex items-center gap-2 text-sm text-primary font-medium mx-auto">
+            <button 
+              onClick={() => setShowScanDialog(true)}
+              className="mt-3 flex items-center gap-2 text-sm text-primary font-medium mx-auto"
+            >
               <Camera className="w-4 h-4" />
               Scan Receipt
             </button>
@@ -182,6 +228,11 @@ export default function AddExpense() {
                 ))}
               </SelectContent>
             </Select>
+            {groups.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                Create a group first to add expenses
+              </p>
+            )}
           </div>
 
           {/* Description */}
@@ -238,7 +289,7 @@ export default function AddExpense() {
           </div>
 
           {/* Members Selection */}
-          {currentGroup && (
+          {selectedGroup && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Split Between</Label>
@@ -246,42 +297,59 @@ export default function AddExpense() {
                   onClick={handleSelectAll}
                   className="text-sm text-primary font-medium"
                 >
-                  {selectedMembers.length === currentGroup.members.length ? 'Deselect All' : 'Select All'}
+                  {selectedMembers.length === groupMembers.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              <div className="space-y-2">
-                {currentGroup.members.map((member) => (
-                  <div
-                    key={member.id}
-                    onClick={() => toggleMember(member.userId)}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
-                      selectedMembers.includes(member.userId)
-                        ? 'bg-primary/10 border-2 border-primary'
-                        : 'bg-secondary border-2 border-transparent'
-                    }`}
-                  >
-                    <Checkbox 
-                      checked={selectedMembers.includes(member.userId)}
-                      className="pointer-events-none"
-                    />
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={member.photoURL} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {member.displayName.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">{member.displayName}</p>
-                      <p className="text-xs text-muted-foreground">{member.email}</p>
-                    </div>
-                    {selectedMembers.includes(member.userId) && amount && (
-                      <span className="font-semibold text-primary">
-                        ₹{(parseFloat(amount) / selectedMembers.length).toFixed(0)}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+              
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {groupMembers.map((member) => {
+                    const profile = member.profiles;
+                    if (!profile) return null;
+                    
+                    return (
+                      <div
+                        key={member.id}
+                        onClick={() => toggleMember(member.user_id)}
+                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+                          selectedMembers.includes(member.user_id)
+                            ? 'bg-primary/10 border-2 border-primary'
+                            : 'bg-secondary border-2 border-transparent'
+                        }`}
+                      >
+                        <Checkbox 
+                          checked={selectedMembers.includes(member.user_id)}
+                          className="pointer-events-none"
+                        />
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={profile.photo_url || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {profile.display_name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">
+                            {profile.display_name}
+                            {member.user_id === user?.id && (
+                              <span className="text-xs text-muted-foreground ml-2">(You)</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{profile.email}</p>
+                        </div>
+                        {selectedMembers.includes(member.user_id) && amount && (
+                          <span className="font-semibold text-primary">
+                            ₹{(parseFloat(amount) / selectedMembers.length).toFixed(0)}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -302,12 +370,26 @@ export default function AddExpense() {
             variant="gradient"
             size="xl"
             className="w-full"
+            disabled={isSubmitting || !selectedGroup || !description || !amount || selectedMembers.length === 0}
           >
-            <Receipt className="w-5 h-5" />
-            Add Expense
+            {isSubmitting ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Receipt className="w-5 h-5" />
+                Add Expense
+              </>
+            )}
           </Button>
         </motion.div>
       </div>
+
+      {/* Scan Receipt Dialog */}
+      <ScanReceiptDialog
+        isOpen={showScanDialog}
+        onClose={() => setShowScanDialog(false)}
+        onScanComplete={handleScanComplete}
+      />
     </PageLayout>
   );
 }
