@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      currency_rates: {
+        Row: {
+          base_currency: string
+          id: string
+          rate: number
+          target_currency: string
+          updated_at: string
+        }
+        Insert: {
+          base_currency: string
+          id?: string
+          rate: number
+          target_currency: string
+          updated_at?: string
+        }
+        Update: {
+          base_currency?: string
+          id?: string
+          rate?: number
+          target_currency?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expense_splits: {
         Row: {
           amount: number
@@ -69,10 +93,13 @@ export type Database = {
           created_at: string
           currency: string
           description: string
+          exchange_rate: number | null
           group_id: string
           id: string
           is_settled: boolean
           notes: string | null
+          original_amount: number | null
+          original_currency: string | null
           paid_by: string
           receipt_url: string | null
           split_type: string
@@ -84,10 +111,13 @@ export type Database = {
           created_at?: string
           currency?: string
           description: string
+          exchange_rate?: number | null
           group_id: string
           id?: string
           is_settled?: boolean
           notes?: string | null
+          original_amount?: number | null
+          original_currency?: string | null
           paid_by: string
           receipt_url?: string | null
           split_type?: string
@@ -99,10 +129,13 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string
+          exchange_rate?: number | null
           group_id?: string
           id?: string
           is_settled?: boolean
           notes?: string | null
+          original_amount?: number | null
+          original_currency?: string | null
           paid_by?: string
           receipt_url?: string | null
           split_type?: string
@@ -154,6 +187,51 @@ export type Database = {
           },
           {
             foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          message_type: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -248,6 +326,7 @@ export type Database = {
           id: string
           phone: string | null
           photo_url: string | null
+          preferred_currency: string | null
           updated_at: string
           upi_id: string | null
           user_id: string
@@ -259,6 +338,7 @@ export type Database = {
           id?: string
           phone?: string | null
           photo_url?: string | null
+          preferred_currency?: string | null
           updated_at?: string
           upi_id?: string | null
           user_id: string
@@ -270,6 +350,7 @@ export type Database = {
           id?: string
           phone?: string | null
           photo_url?: string | null
+          preferred_currency?: string | null
           updated_at?: string
           upi_id?: string | null
           user_id?: string

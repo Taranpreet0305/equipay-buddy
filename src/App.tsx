@@ -13,6 +13,8 @@ import CreateGroup from "./pages/CreateGroup";
 import AddExpense from "./pages/AddExpense";
 import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
+import Convert from "./pages/Convert";
+import Scan from "./pages/Scan";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -22,10 +24,10 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
-          <span className="text-2xl">💰</span>
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <span className="text-xl sm:text-2xl">💰</span>
         </div>
-        <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+        <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-primary mx-auto" />
       </div>
     </div>
   );
@@ -112,6 +114,18 @@ function AppRoutes() {
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/convert" element={
+        <ProtectedRoute>
+          <Convert />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/scan" element={
+        <ProtectedRoute>
+          <Scan />
         </ProtectedRoute>
       } />
       
