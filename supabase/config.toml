@@ -1,13 +1,16 @@
 project_id = "coaceecwalmcglsyzhhg"
 
 [functions.scan-receipt]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-notification]
 verify_jwt = false
 
 [functions.spending-insights]
-verify_jwt = true
+verify_jwt = false
 
 [functions.convert-currency]
+verify_jwt = false
+
+[functions.send-reminder-email]
 verify_jwt = false
