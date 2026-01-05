@@ -3,6 +3,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { BalanceCard } from '@/components/dashboard/BalanceCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { SpendingInsights } from '@/components/insights/SpendingInsights';
+import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Search, Users, ChevronRight } from 'lucide-react';
@@ -56,29 +57,29 @@ export default function Dashboard() {
 
   return (
     <PageLayout>
-      <div className="px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8 max-w-2xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 max-w-4xl mx-auto w-full overflow-x-hidden">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
+          className="flex items-center justify-between gap-4"
         >
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Avatar className="w-11 h-11 sm:w-12 sm:h-12 border-2 border-primary/20">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <Avatar className="w-11 h-11 sm:w-12 sm:h-12 border-2 border-primary/20 flex-shrink-0">
               <AvatarImage src={profile?.photo_url || undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm sm:text-base">
                 {profile?.display_name?.charAt(0) || user?.email?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs sm:text-sm text-muted-foreground">Welcome back,</p>
-              <h1 className="font-bold text-base sm:text-lg text-foreground">
+              <h1 className="font-bold text-base sm:text-lg text-foreground truncate">
                 {profile?.display_name?.split(' ')[0] || 'Friend'} 👋
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <ThemeToggle />
             <button className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-secondary flex items-center justify-center">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
@@ -103,6 +104,9 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <QuickActions />
+
+        {/* Spending Analytics */}
+        <SpendingAnalytics categoryData={mockCategories} />
 
         {/* AI Insights */}
         <div className="pt-2">
