@@ -54,6 +54,8 @@
     --shadow-lg: 0 10px 15px -3px hsl(160 30% 10% / 0.08), 0 4px 6px -4px hsl(160 30% 10% / 0.05);
     --shadow-xl: 0 20px 25px -5px hsl(160 30% 10% / 0.1), 0 8px 10px -6px hsl(160 30% 10% / 0.05);
     --shadow-glow: 0 0 20px hsl(160 84% 32% / 0.3);
+    --shadow-soft: 0 2px 8px -2px hsl(160 30% 10% / 0.1), 0 4px 12px -4px hsl(160 30% 10% / 0.08);
+    --shadow-elevated: 0 8px 24px -4px hsl(160 30% 10% / 0.12), 0 4px 8px -2px hsl(160 30% 10% / 0.06);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -110,6 +112,8 @@
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
     --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.6), 0 8px 10px -6px hsl(0 0% 0% / 0.5);
     --shadow-glow: 0 0 20px hsl(160 70% 45% / 0.3);
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.3), 0 4px 12px -4px hsl(0 0% 0% / 0.25);
+    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.4), 0 4px 8px -2px hsl(0 0% 0% / 0.2);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -127,9 +131,15 @@
     @apply border-border;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 }
 
@@ -160,6 +170,14 @@
     box-shadow: var(--shadow-glow);
   }
 
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
@@ -186,5 +204,25 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  .no-horizontal-scroll {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
+/* Responsive breakpoints for extra small devices */
+@media screen and (max-width: 359px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Ensure content doesn't overflow */
+@media screen and (max-width: 480px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }

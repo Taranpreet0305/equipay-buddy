@@ -10,13 +10,13 @@ interface PageLayoutProps {
 
 export function PageLayout({ children, showNav = true, className = '' }: PageLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <motion.main
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2 }}
-        className={`pb-20 ${className}`}
+        className={`pb-24 sm:pb-28 w-full max-w-full ${className}`}
       >
         {children}
       </motion.main>
