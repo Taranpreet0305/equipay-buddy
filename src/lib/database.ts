@@ -98,16 +98,6 @@ export async function signInWithEmail(email: string, password: string) {
   return { data, error };
 }
 
-export async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/dashboard`,
-    },
-  });
-  
-  return { data, error };
-}
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
@@ -137,14 +127,26 @@ export async function updateProfile(userId: string, updates: Partial<ProfileDB>)
 }
 
 export async function searchProfiles(query: string, excludeUserIds: string[] = []) {
+  // Sanitize input to prevent injection
+  const sanitizedQuery = query.replace(/[%_\\]/g, '\\$&').trim();
+  
+  if (!sanitizedQuery || sanitizedQuery.length < 2) {
+    return { data: [], error: null };
+  }
+  
+  // Validate UUIDs to prevent injection
+  const validExcludeIds = excludeUserIds.filter(id => 
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  );
+  
   let queryBuilder = supabase
     .from('profiles')
     .select('*')
-    .or(`display_name.ilike.%${query}%,email.ilike.%${query}%`)
+    .or(`display_name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%`)
     .limit(10);
   
-  if (excludeUserIds.length > 0) {
-    queryBuilder = queryBuilder.not('user_id', 'in', `(${excludeUserIds.join(',')})`);
+  if (validExcludeIds.length > 0) {
+    queryBuilder = queryBuilder.not('user_id', 'in', `(${validExcludeIds.join(',')})`);
   }
   
   const { data, error } = await queryBuilder;
