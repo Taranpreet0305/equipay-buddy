@@ -91,7 +91,7 @@ export default function Landing() {
         delay: 0.3,
         duration: 0.5
       }} className="px-5 sm:px-6 -mb-24 sm:-mb-28 my-[20px]">
-          <div className="bg-card rounded-2xl sm:rounded-3xl shadow-float p-5 sm:p-6 border border-border/50 max-w-md mx-auto">
+          <div className="bg-card rounded-2xl sm:rounded-3xl shadow-float p-5 sm:p-6 border border-border/50 max-w-md mx-auto my-0 mb-[150px]">
             <div className="flex items-center justify-between mb-4 sm:mb-5">
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total Balance</p>
