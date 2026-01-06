@@ -109,77 +109,77 @@ export default function Profile() {
 
   return (
     <PageLayout>
-      <div className="pb-8 max-w-2xl mx-auto w-full overflow-x-hidden">
+      <div className="pb-6 max-w-2xl mx-auto w-full overflow-x-hidden">
         {/* Header */}
-        <div className="gradient-hero px-4 sm:px-6 pt-6 sm:pt-8 pb-14 sm:pb-16 text-primary-foreground">
+        <div className="gradient-hero px-3 sm:px-4 md:px-6 pt-5 sm:pt-6 pb-12 sm:pb-14 text-primary-foreground">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
             <div className="relative inline-block">
-              <Avatar className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 border-4 border-white/20">
+              <Avatar className="w-18 h-18 sm:w-20 sm:h-20 md:w-24 md:h-24 border-4 border-white/20">
                 <AvatarImage src={profile?.photo_url || undefined} />
-                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl bg-white/20">
+                <AvatarFallback className="text-lg sm:text-xl md:text-2xl bg-white/20">
                   {profile?.display_name?.charAt(0) || user?.email?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-accent flex items-center justify-center">
-                <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <button className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent flex items-center justify-center">
+                <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-3 sm:mt-4 md:mt-5 truncate px-4">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold mt-2.5 sm:mt-3 truncate px-4">
               {profile?.display_name || 'User'}
             </h1>
-            <p className="text-sm sm:text-base opacity-80 mt-1 truncate px-4">{user?.email}</p>
+            <p className="text-xs sm:text-sm opacity-80 mt-0.5 truncate px-4">{user?.email}</p>
             {profile?.phone && (
-              <p className="text-xs sm:text-sm opacity-60 mt-1">{profile.phone}</p>
+              <p className="text-[10px] sm:text-xs opacity-60 mt-0.5">{profile.phone}</p>
             )}
           </motion.div>
         </div>
 
-        <div className="px-4 sm:px-6 -mt-8 space-y-4 sm:space-y-5 md:space-y-6">
+        <div className="px-3 sm:px-4 md:px-6 -mt-6 space-y-3 sm:space-y-4">
           {/* Stats Cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 gap-3 sm:gap-4"
+            className="grid grid-cols-2 gap-2 sm:gap-3"
           >
-            <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
-              <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center mb-2 sm:mb-3">
-                <Receipt className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
+            <div className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                <Receipt className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-primary" />
               </div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">
+              <p className="text-base sm:text-lg md:text-xl font-bold text-foreground">
                 ₹{analytics.totalExpenses.toLocaleString('en-IN')}
               </p>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Total Expenses</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Total Expenses</p>
             </div>
 
-            <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
-              <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-success/10 flex items-center justify-center mb-2 sm:mb-3">
-                <Wallet className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-success" />
+            <div className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-success/10 flex items-center justify-center mb-2">
+                <Wallet className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-success" />
               </div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">
+              <p className="text-base sm:text-lg md:text-xl font-bold text-foreground">
                 ₹{analytics.totalPaid.toLocaleString('en-IN')}
               </p>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Amount Paid</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Amount Paid</p>
             </div>
 
-            <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
-              <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center mb-2 sm:mb-3">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-accent" />
+            <div className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/10 flex items-center justify-center mb-2">
+                <TrendingUp className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-accent" />
               </div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">{analytics.groupsCount}</p>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Active Groups</p>
+              <p className="text-base sm:text-lg md:text-xl font-bold text-foreground">{analytics.groupsCount}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Active Groups</p>
             </div>
 
-            <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
-              <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-warning/10 flex items-center justify-center mb-2 sm:mb-3">
-                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-warning" />
+            <div className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-warning/10 flex items-center justify-center mb-2">
+                <CreditCard className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-warning" />
               </div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">{analytics.settledCount}</p>
-              <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Settlements</p>
+              <p className="text-base sm:text-lg md:text-xl font-bold text-foreground">{analytics.settledCount}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Settlements</p>
             </div>
           </motion.div>
 
@@ -188,20 +188,20 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50"
+            className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50"
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                   {isDark ? (
-                    <Moon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-muted-foreground" />
+                    <Moon className="w-4 h-4 text-muted-foreground" />
                   ) : (
-                    <Sun className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-muted-foreground" />
+                    <Sun className="w-4 h-4 text-muted-foreground" />
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-foreground text-sm sm:text-base">Appearance</p>
-                  <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">
+                  <p className="font-semibold text-foreground text-xs sm:text-sm">Appearance</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     {isDark ? 'Dark mode' : 'Light mode'}
                   </p>
                 </div>
@@ -210,7 +210,7 @@ export default function Profile() {
                 variant="outline"
                 size="sm"
                 onClick={toggleTheme}
-                className="rounded-lg sm:rounded-xl text-xs sm:text-sm flex-shrink-0"
+                className="rounded-lg text-xs flex-shrink-0 h-8"
               >
                 {isDark ? 'Light' : 'Dark'}
               </Button>
@@ -223,17 +223,17 @@ export default function Profile() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.18 }}
-              className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50"
+              className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-muted-foreground" />
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-foreground text-sm sm:text-base">Push Notifications</p>
-                    <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">
-                      Get notified about expenses & reminders
+                    <p className="font-semibold text-foreground text-xs sm:text-sm">Push Notifications</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">
+                      Get notified about expenses
                     </p>
                   </div>
                 </div>
@@ -251,36 +251,36 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50"
+            className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50"
           >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <Label className="font-semibold text-sm sm:text-base">UPI ID</Label>
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <Label className="font-semibold text-xs sm:text-sm">UPI ID</Label>
               <button 
                 onClick={() => setIsEditing(!isEditing)}
-                className="text-primary text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-1.5"
+                className="text-primary text-xs font-medium flex items-center gap-1"
               >
-                <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Edit2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 {isEditing ? 'Cancel' : 'Edit'}
               </button>
             </div>
             {isEditing ? (
-              <div className="flex gap-2 sm:gap-3">
+              <div className="flex gap-2">
                 <Input
                   value={upiId}
                   onChange={(e) => setUpiId(e.target.value)}
                   placeholder="yourname@upi"
-                  className="flex-1 h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm"
+                  className="flex-1 h-9 sm:h-10 rounded-lg text-sm"
                 />
-                <Button onClick={handleSaveUPI} variant="gradient" disabled={isSaving} size="sm" className="sm:size-default">
+                <Button onClick={handleSaveUPI} variant="gradient" disabled={isSaving} size="sm" className="h-9 sm:h-10">
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
                 </Button>
               </div>
             ) : (
-              <p className="text-foreground font-medium text-sm sm:text-base">
+              <p className="text-foreground font-medium text-xs sm:text-sm">
                 {profile?.upi_id || 'Not set'}
               </p>
             )}
-            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-2 sm:mt-3">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
               Used for receiving payments from group members
             </p>
           </motion.div>
@@ -290,22 +290,22 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-card rounded-xl sm:rounded-2xl shadow-soft border border-border/50 overflow-hidden"
+            className="bg-card rounded-xl shadow-soft border border-border/50 overflow-hidden"
           >
             {menuItems.map((item, index) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.label}
-                  className={`w-full flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 md:p-5 hover:bg-secondary/50 transition-colors ${
+                  className={`w-full flex items-center gap-2 sm:gap-3 p-3 sm:p-3.5 hover:bg-secondary/50 transition-colors ${
                     index !== menuItems.length - 1 ? 'border-b border-border/50' : ''
                   }`}
                 >
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-muted-foreground" />
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-muted-foreground" />
                   </div>
-                  <span className="flex-1 text-left font-medium text-foreground text-xs sm:text-sm md:text-base">{item.label}</span>
-                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0" />
+                  <span className="flex-1 text-left font-medium text-foreground text-xs sm:text-sm">{item.label}</span>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 </button>
               );
             })}
@@ -316,19 +316,19 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="pt-2"
+            className="pt-1"
           >
             <Button
               onClick={handleLogout}
               variant="ghost"
-              className="w-full h-12 sm:h-14 text-destructive hover:text-destructive hover:bg-destructive/10 text-sm sm:text-base"
+              className="w-full h-11 sm:h-12 text-destructive hover:text-destructive hover:bg-destructive/10 text-xs sm:text-sm"
               disabled={isLoggingOut}
             >
               {isLoggingOut ? (
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <LogOut className="w-4 h-4" />
                   Log Out
                 </>
               )}
