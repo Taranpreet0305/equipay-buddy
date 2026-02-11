@@ -50,10 +50,10 @@ export default function Dashboard() {
   ];
   const mockCategories = { food: 1500, transport: 800, shopping: 2000 };
 
-  // Calculate totals
-  const youAreOwed = 1600;
-  const youOwe = 2100;
-  const totalBalance = youAreOwed - youOwe;
+  // Start with 0 balances - will be calculated from real expenses later
+  const youAreOwed = 0;
+  const youOwe = 0;
+  const totalBalance = 0;
 
   return (
     <PageLayout>
