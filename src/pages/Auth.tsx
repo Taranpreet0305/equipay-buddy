@@ -8,6 +8,7 @@ import { Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Loader2 } from 'l
 import { toast } from 'sonner';
 import { signUpWithEmail, signInWithEmail } from '@/lib/database';
 import { supabase } from '@/integrations/supabase/client';
+import logoImg from '@/assets/logo.png';
 
 export default function Auth() {
   const navigate = useNavigate();
