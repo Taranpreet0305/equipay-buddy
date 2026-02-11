@@ -109,6 +109,9 @@ export default function Dashboard() {
         {/* Spending Analytics */}
         <SpendingAnalytics categoryData={mockCategories} />
 
+        {/* Recurring Bills */}
+        <RecurringExpenses />
+
         {/* AI Insights */}
         <div className="pt-1 sm:pt-2">
           <SpendingInsights
