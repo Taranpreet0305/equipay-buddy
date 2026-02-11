@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Users, Receipt, PieChart, CreditCard, ArrowRight, Check, Globe, MessageCircle, Sparkles, Shield, WifiOff } from 'lucide-react';
+import logoImg from '@/assets/logo.png';
 const features = [{
   icon: Users,
   title: 'Group Expenses',
