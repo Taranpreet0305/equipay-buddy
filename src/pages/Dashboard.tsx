@@ -4,6 +4,7 @@ import { BalanceCard } from '@/components/dashboard/BalanceCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { SpendingInsights } from '@/components/insights/SpendingInsights';
 import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
+import { RecurringExpenses } from '@/components/recurring/RecurringExpenses';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Search, Users, ChevronRight } from 'lucide-react';
@@ -50,10 +51,10 @@ export default function Dashboard() {
   ];
   const mockCategories = { food: 1500, transport: 800, shopping: 2000 };
 
-  // Calculate totals
-  const youAreOwed = 1600;
-  const youOwe = 2100;
-  const totalBalance = youAreOwed - youOwe;
+  // Start with 0 balances - will be calculated from real expenses later
+  const youAreOwed = 0;
+  const youOwe = 0;
+  const totalBalance = 0;
 
   return (
     <PageLayout>
@@ -107,6 +108,9 @@ export default function Dashboard() {
 
         {/* Spending Analytics */}
         <SpendingAnalytics categoryData={mockCategories} />
+
+        {/* Recurring Bills */}
+        <RecurringExpenses />
 
         {/* AI Insights */}
         <div className="pt-1 sm:pt-2">
