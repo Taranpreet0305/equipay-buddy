@@ -41,8 +41,8 @@ export default function Landing() {
           {/* Top bar */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <span className="text-2xl">💰</span>
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden flex items-center justify-center">
+                <img src={logoImg} alt="EquiPay" className="w-full h-full object-cover" />
               </div>
               <span className="text-xl sm:text-2xl font-bold">EquiPay</span>
             </div>
