@@ -4,6 +4,7 @@ import { BalanceCard } from '@/components/dashboard/BalanceCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { SpendingInsights } from '@/components/insights/SpendingInsights';
 import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
+import { RecurringExpenses } from '@/components/recurring/RecurringExpenses';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Search, Users, ChevronRight } from 'lucide-react';
