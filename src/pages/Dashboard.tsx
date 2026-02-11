@@ -12,18 +12,23 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserNotifications, NotificationDB, subscribeToNotifications } from '@/lib/database';
+import { calculateUserBalances, UserBalance } from '@/lib/balanceCalculations';
 import { toast } from 'sonner';
+import logoImg from '@/assets/logo.png';
 
 export default function Dashboard() {
   const { user, profile, groups, refreshGroups } = useAuth();
   const [notifications, setNotifications] = useState<NotificationDB[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [balances, setBalances] = useState<UserBalance>({ youOwe: 0, youAreOwed: 0, totalBalance: 0, categoryTotals: {} });
 
   useEffect(() => {
     if (user) {
       refreshGroups();
       
-      // Fetch notifications
+      // Calculate real balances
+      calculateUserBalances(user.id).then(setBalances);
+
       getUserNotifications(user.id).then(({ data }) => {
         if (data) {
           setNotifications(data);
@@ -31,30 +36,15 @@ export default function Dashboard() {
         }
       });
 
-      // Subscribe to real-time notifications
       const unsubscribe = subscribeToNotifications(user.id, (notification) => {
         setNotifications(prev => [notification, ...prev]);
         setUnreadCount(prev => prev + 1);
-        toast.info(notification.title, {
-          description: notification.message,
-        });
+        toast.info(notification.title, { description: notification.message });
       });
 
       return () => unsubscribe();
     }
   }, [user]);
-
-  // Mock data for insights (will be replaced with real data)
-  const mockExpenses = [
-    { description: 'Lunch', amount: 350, category: 'food' },
-    { description: 'Uber', amount: 200, category: 'transport' },
-  ];
-  const mockCategories = { food: 1500, transport: 800, shopping: 2000 };
-
-  // Start with 0 balances - will be calculated from real expenses later
-  const youAreOwed = 0;
-  const youOwe = 0;
-  const totalBalance = 0;
 
   return (
     <PageLayout>
@@ -96,18 +86,18 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Balance Card */}
+        {/* Balance Card - Real Data */}
         <BalanceCard
-          totalBalance={totalBalance}
-          youOwe={youOwe}
-          youAreOwed={youAreOwed}
+          totalBalance={balances.totalBalance}
+          youOwe={balances.youOwe}
+          youAreOwed={balances.youAreOwed}
         />
 
         {/* Quick Actions */}
         <QuickActions />
 
-        {/* Spending Analytics */}
-        <SpendingAnalytics categoryData={mockCategories} />
+        {/* Spending Analytics - Real Data */}
+        <SpendingAnalytics categoryData={balances.categoryTotals} />
 
         {/* Recurring Bills */}
         <RecurringExpenses />
@@ -115,9 +105,9 @@ export default function Dashboard() {
         {/* AI Insights */}
         <div className="pt-1 sm:pt-2">
           <SpendingInsights
-            expenses={mockExpenses}
-            totalSpent={4300}
-            categories={mockCategories}
+            expenses={[]}
+            totalSpent={Object.values(balances.categoryTotals).reduce((a, b) => a + b, 0)}
+            categories={balances.categoryTotals}
           />
         </div>
 
@@ -138,36 +128,23 @@ export default function Dashboard() {
                 <Users className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />
               </div>
               <h3 className="font-semibold text-foreground mb-1.5 text-sm">No groups yet</h3>
-              <p className="text-xs text-muted-foreground mb-3">
-                Create a group to start splitting expenses
-              </p>
-              <Link to="/groups/new" className="text-primary font-medium text-xs">
-                Create your first group →
-              </Link>
+              <p className="text-xs text-muted-foreground mb-3">Create a group to start splitting expenses</p>
+              <Link to="/groups/new" className="text-primary font-medium text-xs">Create your first group →</Link>
             </motion.div>
           ) : (
             <div className="space-y-2 sm:space-y-3">
               {groups.slice(0, 3).map((group, index) => (
-                <motion.div
-                  key={group.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
+                <motion.div key={group.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.05 }}>
                   <Link to={`/groups/${group.id}`}>
                     <div className="bg-card rounded-xl p-3 sm:p-3.5 shadow-soft border border-border/50 hover:shadow-elevated transition-shadow active:scale-[0.98]">
                       <div className="flex items-center gap-2 sm:gap-2.5">
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
                           <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
                         </div>
-                        
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-foreground truncate text-xs sm:text-sm">{group.name}</h3>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                            {group.description || 'Tap to view details'}
-                          </p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{group.description || 'Tap to view details'}</p>
                         </div>
-
                         <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       </div>
                     </div>
@@ -184,14 +161,8 @@ export default function Dashboard() {
             <h2 className="font-semibold text-foreground text-sm">Recent Activity</h2>
             <div className="space-y-2">
               {notifications.slice(0, 3).map((notification, index) => (
-                <motion.div
-                  key={notification.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`bg-card rounded-xl p-3 shadow-soft border border-border/50 ${
-                    !notification.is_read ? 'border-l-4 border-l-primary' : ''
-                  }`}
+                <motion.div key={notification.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
+                  className={`bg-card rounded-xl p-3 shadow-soft border border-border/50 ${!notification.is_read ? 'border-l-4 border-l-primary' : ''}`}
                 >
                   <p className="font-medium text-foreground text-xs">{notification.title}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">{notification.message}</p>

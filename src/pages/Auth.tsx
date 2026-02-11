@@ -8,6 +8,7 @@ import { Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Loader2 } from 'l
 import { toast } from 'sonner';
 import { signUpWithEmail, signInWithEmail } from '@/lib/database';
 import { supabase } from '@/integrations/supabase/client';
+import logoImg from '@/assets/logo.png';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -84,8 +85,8 @@ export default function Auth() {
       <div className="gradient-hero px-4 sm:px-6 pt-8 sm:pt-10 pb-10 sm:pb-14 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 -translate-y-1/2 translate-x-1/2 rounded-sm" />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 max-w-md mx-auto">
-          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-3">
-            <span className="text-2xl">💰</span>
+          <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center mb-3">
+            <img src={logoImg} alt="EquiPay" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-xl font-bold mb-1">EquiPay</h1>
           <p className="text-sm opacity-90">Split expenses effortlessly</p>
