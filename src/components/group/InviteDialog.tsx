@@ -26,7 +26,7 @@ export function InviteDialog({ groupId, groupName, isOpen, onClose }: InviteDial
     setIsGenerating(true);
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('group_invites')
         .insert({ group_id: groupId, created_by: user.id })
         .select()

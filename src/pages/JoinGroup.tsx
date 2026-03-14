@@ -22,7 +22,7 @@ export default function JoinGroup() {
   }, [code, user]);
 
   const lookupInvite = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('group_invites')
       .select('*, groups(name)')
       .eq('invite_code', code!)
@@ -47,7 +47,7 @@ export default function JoinGroup() {
       return;
     }
 
-    setGroupName((data as any).groups?.name || 'Unknown Group');
+    setGroupName(data.groups?.name || 'Unknown Group');
     setStatus('found');
   };
 
@@ -56,8 +56,7 @@ export default function JoinGroup() {
     setStatus('joining');
 
     try {
-      // Get invite
-      const { data: invite } = await supabase
+      const { data: invite } = await (supabase as any)
         .from('group_invites')
         .select('*')
         .eq('invite_code', code)
@@ -80,15 +79,13 @@ export default function JoinGroup() {
         return;
       }
 
-      // Join group
       const { error: joinError } = await supabase
         .from('group_members')
         .insert({ group_id: invite.group_id, user_id: user.id });
 
       if (joinError) throw joinError;
 
-      // Increment use count
-      await supabase
+      await (supabase as any)
         .from('group_invites')
         .update({ use_count: invite.use_count + 1 })
         .eq('id', invite.id);

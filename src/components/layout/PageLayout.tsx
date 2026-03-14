@@ -16,7 +16,7 @@ export function PageLayout({ children, showNav = true, className = '' }: PageLay
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2 }}
-        className={`pb-24 sm:pb-28 w-full max-w-full ${className}`}
+        className={`pb-16 sm:pb-20 w-full max-w-full ${className}`}
       >
         {children}
       </motion.main>

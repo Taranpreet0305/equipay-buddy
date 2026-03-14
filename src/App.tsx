@@ -130,6 +130,12 @@ function AppRoutes() {
           <Scan />
         </ProtectedRoute>
       } />
+
+      <Route path="/join/:code" element={
+        <ProtectedRoute>
+          <JoinGroup />
+        </ProtectedRoute>
+      } />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -11,7 +11,7 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-4 gap-2 sm:gap-3">
+    <div className="grid grid-cols-4 gap-2">
       {actions.map((action, index) => {
         const Icon = action.icon;
         return (
@@ -23,16 +23,16 @@ export function QuickActions() {
           >
             <Link
               to={action.path}
-              className="flex flex-col items-center gap-1.5 sm:gap-2"
+              className="flex flex-col items-center gap-1"
             >
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${action.color} flex items-center justify-center shadow-soft`}
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${action.color} flex items-center justify-center shadow-soft`}
               >
-                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
               </motion.div>
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground text-center">
+              <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground text-center">
                 {action.label}
               </span>
             </Link>
