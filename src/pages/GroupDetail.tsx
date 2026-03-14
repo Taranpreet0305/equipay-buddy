@@ -6,16 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupChat } from '@/components/chat/GroupChat';
+import { InviteDialog } from '@/components/group/InviteDialog';
 import { 
-  ArrowLeft, 
-  Plus, 
-  Settings, 
-  Users, 
-  Receipt, 
-  TrendingUp, 
-  TrendingDown,
-  MessageCircle,
-  Loader2
+  ArrowLeft, Plus, Settings, Users, Receipt, TrendingUp,
+  MessageCircle, Loader2, UserPlus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
@@ -29,6 +23,7 @@ export default function GroupDetail() {
   const [expenses, setExpenses] = useState<ExpenseDB[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -67,26 +62,32 @@ export default function GroupDetail() {
 
   return (
     <PageLayout>
-      <div className="pb-6">
+      <div className="pb-4">
         {/* Header */}
-        <div className="gradient-hero px-4 pt-5 sm:pt-6 pb-6 sm:pb-8 text-primary-foreground">
+        <div className="gradient-hero px-4 pt-4 pb-5 text-primary-foreground">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between mb-5 sm:mb-6"
+            className="flex items-center justify-between mb-4"
           >
-            <Link to="/groups" className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center">
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Link to="/groups" className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+              <ArrowLeft className="w-4 h-4" />
             </Link>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setIsInviteOpen(true)}
+                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center"
+              >
+                <UserPlus className="w-4 h-4" />
+              </button>
               <button 
                 onClick={() => setIsChatOpen(true)}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center relative"
+                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center"
               >
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <MessageCircle className="w-4 h-4" />
               </button>
-              <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+              <button className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                <Settings className="w-4 h-4" />
               </button>
             </div>
           </motion.div>
@@ -97,38 +98,38 @@ export default function GroupDetail() {
             transition={{ delay: 0.1 }}
             className="text-center"
           >
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
-              <Users className="w-7 h-7 sm:w-8 sm:h-8" />
+            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-2">
+              <Users className="w-6 h-6" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold mb-1">{group.name}</h1>
-            <p className="text-xs sm:text-sm opacity-80">{members.length} members</p>
+            <h1 className="text-lg font-bold mb-0.5">{group.name}</h1>
+            <p className="text-xs opacity-80">{members.length} members</p>
           </motion.div>
         </div>
 
         {/* Tabs */}
-        <div className="px-4 -mt-3 sm:-mt-4">
+        <div className="px-3 -mt-3">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full bg-card shadow-soft rounded-lg sm:rounded-xl p-1">
-              <TabsTrigger value="expenses" className="flex-1 rounded-md sm:rounded-lg text-xs sm:text-sm">
-                <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+            <TabsList className="w-full bg-card shadow-soft rounded-lg p-1">
+              <TabsTrigger value="expenses" className="flex-1 rounded-md text-xs">
+                <Receipt className="w-3.5 h-3.5 mr-1.5" />
                 Expenses
               </TabsTrigger>
-              <TabsTrigger value="balances" className="flex-1 rounded-md sm:rounded-lg text-xs sm:text-sm">
-                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+              <TabsTrigger value="balances" className="flex-1 rounded-md text-xs">
+                <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
                 Balances
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="expenses" className="mt-3 sm:mt-4 space-y-2.5 sm:space-y-3">
+            <TabsContent value="expenses" className="mt-3 space-y-2">
               <Link to="/add-expense">
-                <Button variant="outline" className="w-full h-11 sm:h-12 rounded-lg sm:rounded-xl border-dashed text-sm">
-                  <Plus className="w-4 h-4" />
+                <Button variant="outline" className="w-full h-10 rounded-lg border-dashed text-xs">
+                  <Plus className="w-3.5 h-3.5" />
                   Add Expense
                 </Button>
               </Link>
 
               {expenses.length === 0 ? (
-                <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
+                <div className="text-center py-6 text-muted-foreground text-xs">
                   No expenses yet. Add your first expense!
                 </div>
               ) : (
@@ -137,16 +138,16 @@ export default function GroupDetail() {
                     key={expense.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-card rounded-lg sm:rounded-xl p-3.5 sm:p-4 shadow-soft border border-border/50"
+                    className="bg-card rounded-lg p-3 shadow-soft border border-border/50"
                   >
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{expense.description}</h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
+                        <h3 className="font-semibold text-foreground text-sm truncate">{expense.description}</h3>
+                        <p className="text-xs text-muted-foreground">
                           Paid by {expense.profiles?.display_name || 'Unknown'}
                         </p>
                       </div>
-                      <p className="font-bold text-foreground text-sm sm:text-base flex-shrink-0 ml-2">
+                      <p className="font-bold text-foreground text-sm flex-shrink-0 ml-2">
                         ₹{Number(expense.amount).toLocaleString('en-IN')}
                       </p>
                     </div>
@@ -155,7 +156,7 @@ export default function GroupDetail() {
               )}
             </TabsContent>
 
-            <TabsContent value="balances" className="mt-3 sm:mt-4 space-y-2.5 sm:space-y-3">
+            <TabsContent value="balances" className="mt-3 space-y-2">
               {members.map((member) => {
                 const profile = member.profiles;
                 if (!profile) return null;
@@ -165,23 +166,23 @@ export default function GroupDetail() {
                     key={member.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="bg-card rounded-lg sm:rounded-xl p-3.5 sm:p-4 shadow-soft border border-border/50"
+                    className="bg-card rounded-lg p-3 shadow-soft border border-border/50"
                   >
-                    <div className="flex items-center gap-2.5 sm:gap-3">
-                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar className="w-9 h-9">
                         <AvatarImage src={profile.photo_url || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
                           {profile.display_name?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm sm:text-base truncate">
+                        <p className="font-medium text-foreground text-sm truncate">
                           {profile.display_name}
                           {member.user_id === user?.id && (
-                            <span className="text-[10px] sm:text-xs text-muted-foreground ml-1.5 sm:ml-2">(You)</span>
+                            <span className="text-[10px] text-muted-foreground ml-1.5">(You)</span>
                           )}
                         </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{profile.email}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{profile.email}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -200,6 +201,14 @@ export default function GroupDetail() {
           onClose={() => setIsChatOpen(false)}
         />
       )}
+
+      {/* Invite Dialog */}
+      <InviteDialog
+        groupId={group.id}
+        groupName={group.name}
+        isOpen={isInviteOpen}
+        onClose={() => setIsInviteOpen(false)}
+      />
     </PageLayout>
   );
 }

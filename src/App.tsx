@@ -16,6 +16,7 @@ import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
 import Convert from "./pages/Convert";
 import Scan from "./pages/Scan";
+import JoinGroup from "./pages/JoinGroup";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -127,6 +128,12 @@ function AppRoutes() {
       <Route path="/scan" element={
         <ProtectedRoute>
           <Scan />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/join/:code" element={
+        <ProtectedRoute>
+          <JoinGroup />
         </ProtectedRoute>
       } />
       

@@ -16,20 +16,20 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/50 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around h-14 sm:h-16 px-1 sm:px-2 max-w-lg mx-auto">
+      <div className="flex items-center justify-around h-12 sm:h-14 px-1 max-w-lg mx-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
 
           if (item.isAction) {
             return (
-              <Link key={item.path} to={item.path} className="-mt-5 sm:-mt-6">
+              <Link key={item.path} to={item.path} className="-mt-4">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full gradient-primary shadow-glow flex items-center justify-center"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full gradient-primary shadow-glow flex items-center justify-center"
                 >
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
                 </motion.div>
               </Link>
             );
@@ -39,22 +39,22 @@ export function BottomNav() {
             <Link
               key={item.path}
               to={item.path}
-              className="relative flex flex-col items-center justify-center w-14 sm:w-16 h-full"
+              className="relative flex flex-col items-center justify-center w-12 sm:w-14 h-full"
             >
               <motion.div
                 initial={false}
                 animate={isActive ? { scale: 1.1 } : { scale: 1 }}
-                className="flex flex-col items-center gap-0.5 sm:gap-1"
+                className="flex flex-col items-center gap-0.5"
               >
                 <Icon
                   className={cn(
-                    "w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200",
+                    "w-4 h-4 transition-colors duration-200",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}
                 />
                 <span
                   className={cn(
-                    "text-[9px] sm:text-[10px] font-medium transition-colors duration-200",
+                    "text-[8px] sm:text-[9px] font-medium transition-colors duration-200",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}
                 >
@@ -64,7 +64,7 @@ export function BottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-0.5 w-6 sm:w-8 h-0.5 sm:h-1 rounded-full bg-primary"
+                  className="absolute -top-0.5 w-6 h-0.5 rounded-full bg-primary"
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
