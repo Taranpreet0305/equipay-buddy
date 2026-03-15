@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
+import { GroupBalances } from '@/components/group/GroupBalances';
 
 export default function GroupDetail() {
   const { id } = useParams();
@@ -156,38 +157,8 @@ export default function GroupDetail() {
               )}
             </TabsContent>
 
-            <TabsContent value="balances" className="mt-3 space-y-2">
-              {members.map((member) => {
-                const profile = member.profiles;
-                if (!profile) return null;
-
-                return (
-                  <motion.div
-                    key={member.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="bg-card rounded-lg p-3 shadow-soft border border-border/50"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Avatar className="w-9 h-9">
-                        <AvatarImage src={profile.photo_url || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                          {profile.display_name?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate">
-                          {profile.display_name}
-                          {member.user_id === user?.id && (
-                            <span className="text-[10px] text-muted-foreground ml-1.5">(You)</span>
-                          )}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate">{profile.email}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+            <TabsContent value="balances" className="mt-3">
+              <GroupBalances groupId={id!} members={members} />
             </TabsContent>
           </Tabs>
         </div>
