@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
+import { GroupBalances } from '@/components/group/GroupBalances';
 
 export default function GroupDetail() {
   const { id } = useParams();
