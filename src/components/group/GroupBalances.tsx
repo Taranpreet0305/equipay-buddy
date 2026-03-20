@@ -8,6 +8,7 @@ import { SettleDialog } from '@/components/settle/SettleDialog';
 import { ArrowRight, Loader2, HandCoins } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { notifySettlement } from '@/lib/notifications';
 
 interface MemberProfile {
   user_id: string;
