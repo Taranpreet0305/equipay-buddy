@@ -34,6 +34,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { createExpense, getGroupWithMembers, GroupMemberDB } from '@/lib/database';
 import { ScanReceiptDialog } from '@/components/expense/ScanReceiptDialog';
+import { notifyExpenseAdded } from '@/lib/notifications';
 
 const categories = [
   { value: 'food', label: 'Food & Drinks', icon: Utensils },
