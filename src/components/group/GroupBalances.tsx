@@ -8,6 +8,7 @@ import { SettleDialog } from '@/components/settle/SettleDialog';
 import { ArrowRight, Loader2, HandCoins } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { notifySettlement } from '@/lib/notifications';
 
 interface MemberProfile {
   user_id: string;
@@ -93,6 +94,16 @@ export function GroupBalances({ groupId, members }: GroupBalancesProps) {
       });
 
     if (error) throw error;
+
+    // Notify the creditor
+    const fromProfile = profileMap.get(settleTarget.from);
+    notifySettlement(
+      groupId,
+      fromProfile?.display_name || 'Someone',
+      settleTarget.to,
+      settleTarget.amount,
+      method
+    );
 
     // Mark related expense splits as paid
     const { data: expenses } = await supabase

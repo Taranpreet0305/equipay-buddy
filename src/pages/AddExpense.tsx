@@ -34,6 +34,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { createExpense, getGroupWithMembers, GroupMemberDB } from '@/lib/database';
 import { ScanReceiptDialog } from '@/components/expense/ScanReceiptDialog';
+import { notifyExpenseAdded } from '@/lib/notifications';
 
 const categories = [
   { value: 'food', label: 'Food & Drinks', icon: Utensils },
@@ -151,6 +152,16 @@ export default function AddExpense() {
       );
 
       if (error) throw error;
+
+      // Notify group members
+      const profile = groupMembers.find(m => m.user_id === user.id)?.profiles;
+      notifyExpenseAdded(
+        selectedGroup,
+        description,
+        amountNum,
+        profile?.display_name || 'Someone',
+        user.id
+      );
 
       await refreshGroups();
       toast.success('Expense added successfully!');
