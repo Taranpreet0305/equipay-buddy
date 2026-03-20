@@ -95,6 +95,16 @@ export function GroupBalances({ groupId, members }: GroupBalancesProps) {
 
     if (error) throw error;
 
+    // Notify the creditor
+    const fromProfile = profileMap.get(settleTarget.from);
+    notifySettlement(
+      groupId,
+      fromProfile?.display_name || 'Someone',
+      settleTarget.to,
+      settleTarget.amount,
+      method
+    );
+
     // Mark related expense splits as paid
     const { data: expenses } = await supabase
       .from('expenses')
