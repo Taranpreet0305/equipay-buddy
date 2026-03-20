@@ -3,13 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupChat } from '@/components/chat/GroupChat';
 import { InviteDialog } from '@/components/group/InviteDialog';
+import { SettlementHistory } from '@/components/group/SettlementHistory';
 import { 
   ArrowLeft, Plus, Settings, Users, Receipt, TrendingUp,
-  MessageCircle, Loader2, UserPlus
+  MessageCircle, Loader2, UserPlus, History
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
@@ -103,7 +103,7 @@ export default function GroupDetail() {
               <Users className="w-6 h-6" />
             </div>
             <h1 className="text-lg font-bold mb-0.5">{group.name}</h1>
-            <p className="text-xs opacity-80">{members.length} members</p>
+            <p className="text-xs opacity-80">{members.length} members · {expenses.length} expenses</p>
           </motion.div>
         </div>
 
@@ -112,12 +112,16 @@ export default function GroupDetail() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full bg-card shadow-soft rounded-lg p-1">
               <TabsTrigger value="expenses" className="flex-1 rounded-md text-xs">
-                <Receipt className="w-3.5 h-3.5 mr-1.5" />
+                <Receipt className="w-3.5 h-3.5 mr-1" />
                 Expenses
               </TabsTrigger>
               <TabsTrigger value="balances" className="flex-1 rounded-md text-xs">
-                <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
+                <TrendingUp className="w-3.5 h-3.5 mr-1" />
                 Balances
+              </TabsTrigger>
+              <TabsTrigger value="settlements" className="flex-1 rounded-md text-xs">
+                <History className="w-3.5 h-3.5 mr-1" />
+                History
               </TabsTrigger>
             </TabsList>
 
@@ -147,6 +151,12 @@ export default function GroupDetail() {
                         <p className="text-xs text-muted-foreground">
                           Paid by {expense.profiles?.display_name || 'Unknown'}
                         </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {new Date(expense.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          {expense.is_settled && (
+                            <span className="ml-1.5 text-green-500 font-medium">✓ Settled</span>
+                          )}
+                        </p>
                       </div>
                       <p className="font-bold text-foreground text-sm flex-shrink-0 ml-2">
                         ₹{Number(expense.amount).toLocaleString('en-IN')}
@@ -159,6 +169,10 @@ export default function GroupDetail() {
 
             <TabsContent value="balances" className="mt-3">
               <GroupBalances groupId={id!} members={members} />
+            </TabsContent>
+
+            <TabsContent value="settlements" className="mt-3">
+              <SettlementHistory groupId={id!} members={members} />
             </TabsContent>
           </Tabs>
         </div>

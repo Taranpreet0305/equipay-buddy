@@ -7,24 +7,40 @@ import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
 import { RecurringExpenses } from '@/components/recurring/RecurringExpenses';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, Users, ChevronRight } from 'lucide-react';
+import { Bell, Users, ChevronRight, Receipt, CheckCircle2, Banknote, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { getUserNotifications, NotificationDB, subscribeToNotifications } from '@/lib/database';
 import { calculateUserBalances, UserBalance } from '@/lib/balanceCalculations';
+import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+
+interface RecentItem {
+  id: string;
+  type: 'expense' | 'settlement';
+  description: string;
+  amount: number;
+  date: string;
+  paidBy: string;
+  method?: string;
+  toUser?: string;
+}
 
 export default function Dashboard() {
   const { user, profile, groups, refreshGroups } = useAuth();
   const [notifications, setNotifications] = useState<NotificationDB[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [balances, setBalances] = useState<UserBalance>({ youOwe: 0, youAreOwed: 0, totalBalance: 0, categoryTotals: {} });
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [settlementCount, setSettlementCount] = useState(0);
 
   useEffect(() => {
     if (user) {
       refreshGroups();
       calculateUserBalances(user.id).then(setBalances);
+      loadRecentActivity();
 
       getUserNotifications(user.id).then(({ data }) => {
         if (data) {
@@ -42,6 +58,58 @@ export default function Dashboard() {
       return () => unsubscribe();
     }
   }, [user]);
+
+  async function loadRecentActivity() {
+    if (!user) return;
+
+    const [expensesRes, settlementsRes] = await Promise.all([
+      supabase
+        .from('expenses')
+        .select('id, description, amount, category, created_at, paid_by, profiles:paid_by(display_name)')
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supabase
+        .from('settlements')
+        .select('id, amount, method, created_at, from_user_id, to_user_id, profiles_from:from_user_id(display_name), profiles_to:to_user_id(display_name)')
+        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+        .order('created_at', { ascending: false })
+        .limit(5)
+    ]);
+
+    const items: RecentItem[] = [];
+
+    if (expensesRes.data) {
+      for (const exp of expensesRes.data) {
+        items.push({
+          id: exp.id,
+          type: 'expense',
+          description: exp.description,
+          amount: Number(exp.amount),
+          date: exp.created_at,
+          paidBy: (exp as any).profiles?.display_name || 'Unknown',
+        });
+      }
+    }
+
+    if (settlementsRes.data) {
+      setSettlementCount(settlementsRes.data.length);
+      for (const s of settlementsRes.data) {
+        items.push({
+          id: s.id,
+          type: 'settlement',
+          description: 'Settlement',
+          amount: Number(s.amount),
+          date: s.created_at,
+          paidBy: (s as any).profiles_from?.display_name || 'Unknown',
+          toUser: (s as any).profiles_to?.display_name || 'Unknown',
+          method: s.method,
+        });
+      }
+    }
+
+    items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setRecentItems(items.slice(0, 5));
+  }
 
   return (
     <PageLayout>
@@ -69,7 +137,7 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-1 flex-shrink-0">
             <ThemeToggle />
-            <Link to="/notifications" className="relative w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+            <Link to="/activity" className="relative w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
               <Bell className="w-3.5 h-3.5 text-muted-foreground" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-accent-foreground text-[8px] font-bold rounded-full flex items-center justify-center">
@@ -89,6 +157,59 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <QuickActions />
+
+        {/* Recent Activity (Expenses + Settlements) */}
+        {recentItems.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-foreground text-xs">Recent Activity</h2>
+              <Link to="/activity" className="text-[10px] text-primary font-medium">See all</Link>
+            </div>
+            <div className="space-y-1.5">
+              {recentItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-card rounded-lg p-2.5 shadow-soft border border-border/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      item.type === 'settlement' ? 'bg-green-500/10' : 'bg-primary/10'
+                    }`}>
+                      {item.type === 'settlement' ? (
+                        item.method === 'upi' ? (
+                          <Smartphone className="w-3.5 h-3.5 text-green-600" />
+                        ) : (
+                          <Banknote className="w-3.5 h-3.5 text-green-600" />
+                        )
+                      ) : (
+                        <Receipt className="w-3.5 h-3.5 text-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-xs truncate">
+                        {item.type === 'settlement'
+                          ? `${item.paidBy} → ${item.toUser}`
+                          : item.description}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(item.date), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-bold flex-shrink-0 ${
+                      item.type === 'settlement' ? 'text-green-600' : 'text-foreground'
+                    }`}>
+                      {item.type === 'settlement' && '✓ '}
+                      ₹{item.amount.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Spending Analytics */}
         <SpendingAnalytics categoryData={balances.categoryTotals} />
@@ -146,23 +267,6 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-
-        {/* Recent Notifications */}
-        {notifications.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="font-semibold text-foreground text-xs">Recent Activity</h2>
-            <div className="space-y-1.5">
-              {notifications.slice(0, 3).map((notification, index) => (
-                <motion.div key={notification.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
-                  className={`bg-card rounded-lg p-2.5 shadow-soft border border-border/50 ${!notification.is_read ? 'border-l-4 border-l-primary' : ''}`}
-                >
-                  <p className="font-medium text-foreground text-xs">{notification.title}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{notification.message}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </PageLayout>
   );
