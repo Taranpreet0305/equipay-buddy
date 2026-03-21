@@ -9,11 +9,13 @@ import { InviteDialog } from '@/components/group/InviteDialog';
 import { SettlementHistory } from '@/components/group/SettlementHistory';
 import { 
   ArrowLeft, Plus, Settings, Users, Receipt, TrendingUp,
-  MessageCircle, Loader2, UserPlus, History
+  MessageCircle, Loader2, UserPlus, History, Download
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
 import { GroupBalances } from '@/components/group/GroupBalances';
+import { exportGroupExpensesCSV } from '@/lib/exportCSV';
 
 export default function GroupDetail() {
   const { id } = useParams();
