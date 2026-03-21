@@ -5,6 +5,7 @@ import { QuickActions } from '@/components/dashboard/QuickActions';
 import { SpendingInsights } from '@/components/insights/SpendingInsights';
 import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
 import { RecurringExpenses } from '@/components/recurring/RecurringExpenses';
+import { DebtSummaryCard } from '@/components/dashboard/DebtSummaryCard';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Users, ChevronRight, Receipt, CheckCircle2, Banknote, Smartphone } from 'lucide-react';
@@ -210,6 +211,9 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Debt Simplification Summary */}
+        <DebtSummaryCard />
 
         {/* Spending Analytics */}
         <SpendingAnalytics categoryData={balances.categoryTotals} />
