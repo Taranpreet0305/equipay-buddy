@@ -212,6 +212,9 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Debt Simplification Summary */}
+        <DebtSummaryCard />
+
         {/* Spending Analytics */}
         <SpendingAnalytics categoryData={balances.categoryTotals} />
 

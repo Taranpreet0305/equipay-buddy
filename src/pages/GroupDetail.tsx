@@ -128,12 +128,27 @@ export default function GroupDetail() {
             </TabsList>
 
             <TabsContent value="expenses" className="mt-3 space-y-2">
-              <Link to="/add-expense">
-                <Button variant="outline" className="w-full h-10 rounded-lg border-dashed text-xs">
-                  <Plus className="w-3.5 h-3.5" />
-                  Add Expense
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link to="/add-expense" className="flex-1">
+                  <Button variant="outline" className="w-full h-10 rounded-lg border-dashed text-xs">
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Expense
+                  </Button>
+                </Link>
+                {expenses.length > 0 && (
+                  <Button
+                    variant="outline"
+                    className="h-10 rounded-lg text-xs px-3"
+                    onClick={() => {
+                      exportGroupExpensesCSV(group.id, group.name);
+                      toast.success('Exporting CSV...');
+                    }}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    CSV
+                  </Button>
+                )}
+              </div>
 
               {expenses.length === 0 ? (
                 <div className="text-center py-6 text-muted-foreground text-xs">
