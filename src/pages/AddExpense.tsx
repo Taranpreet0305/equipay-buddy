@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,6 @@ import {
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { createExpense, getGroupWithMembers, GroupMemberDB } from '@/lib/database';
-import { ScanReceiptDialog } from '@/components/expense/ScanReceiptDialog';
 import { notifyExpenseAdded } from '@/lib/notifications';
 
 const categories = [
@@ -57,6 +56,7 @@ const splitTypes = [
 
 export default function AddExpense() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, groups, refreshGroups } = useAuth();
 
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -69,7 +69,21 @@ export default function AddExpense() {
   const [groupMembers, setGroupMembers] = useState<GroupMemberDB[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showScanDialog, setShowScanDialog] = useState(false);
+
+  useEffect(() => {
+    const state = location.state as { amount?: number; description?: string; category?: string } | null;
+    if (!state) return;
+
+    if (typeof state.amount === 'number' && Number.isFinite(state.amount) && state.amount > 0) {
+      setAmount(state.amount.toString());
+    }
+    if (typeof state.description === 'string' && state.description.trim()) {
+      setDescription(state.description.trim());
+    }
+    if (typeof state.category === 'string' && categories.some((c) => c.value === state.category)) {
+      setCategory(state.category);
+    }
+  }, [location.state]);
 
   // Load group members when group is selected
   useEffect(() => {
@@ -103,17 +117,6 @@ export default function AddExpense() {
         ? prev.filter(id => id !== userId)
         : [...prev, userId]
     );
-  };
-
-  const handleScanComplete = (data: {
-    amount: number;
-    currency: string;
-    description: string;
-    category: string;
-  }) => {
-    setAmount(data.amount.toString());
-    setDescription(data.description);
-    setCategory(data.category);
   };
 
   const handleSubmit = async () => {
@@ -185,6 +188,7 @@ export default function AddExpense() {
         >
           <button 
             onClick={() => navigate(-1)}
+            aria-label="Go back"
             className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
@@ -214,13 +218,6 @@ export default function AddExpense() {
                 className="text-3xl sm:text-4xl font-bold text-foreground bg-transparent border-none outline-none text-center w-28 sm:w-40"
               />
             </div>
-            <button 
-              onClick={() => setShowScanDialog(true)}
-              className="mt-2.5 sm:mt-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-primary font-medium mx-auto"
-            >
-              <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              Scan Receipt
-            </button>
           </div>
 
           {/* Group Selection */}
@@ -394,12 +391,6 @@ export default function AddExpense() {
         </motion.div>
       </div>
 
-      {/* Scan Receipt Dialog */}
-      <ScanReceiptDialog
-        isOpen={showScanDialog}
-        onClose={() => setShowScanDialog(false)}
-        onScanComplete={handleScanComplete}
-      />
     </PageLayout>
   );
 }

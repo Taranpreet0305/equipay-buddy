@@ -71,6 +71,8 @@ export interface NotificationDB {
   created_at: string;
 }
 
+
+
 // Auth functions
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const redirectUrl = `${window.location.origin}/`;
@@ -105,6 +107,20 @@ export async function signOut() {
 }
 
 // Profile functions
+export async function getUserStats(userId: string) {
+  const [expensesPaid, expenseSplits, settlements] = await Promise.all([
+    supabase.from('expenses').select('amount').eq('paid_by', userId),
+    supabase.from('expense_splits').select('amount').eq('user_id', userId),
+    supabase.from('settlements').select('id').or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
+  ]);
+
+  const totalPaid = (expensesPaid.data || []).reduce((sum, exp) => sum + Number(exp.amount), 0);
+  const totalExpenses = (expenseSplits.data || []).reduce((sum, split) => sum + Number(split.amount), 0);
+  const settledCount = (settlements.data || []).length;
+
+  return { totalPaid, totalExpenses, settledCount };
+}
+
 export async function getProfile(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
@@ -223,6 +239,18 @@ export async function addGroupMember(groupId: string, userId: string) {
 }
 
 // Expense functions
+export async function updateGroup(id: string, updates: Partial<GroupDB>) {
+  return await supabase.from('groups').update(updates).eq('id', id);
+}
+
+export async function deleteGroup(id: string) {
+  return await supabase.from('groups').delete().eq('id', id);
+}
+
+export async function removeGroupMember(memberId: string) {
+  return await supabase.from('group_members').delete().eq('id', memberId);
+}
+
 export async function getGroupExpenses(groupId: string) {
   const { data, error } = await supabase
     .from('expenses')
@@ -301,6 +329,8 @@ export async function createExpense(
   return { data: expense as ExpenseDB, error: null };
 }
 
+
+
 // Notifications
 export async function getUserNotifications(userId: string) {
   const { data, error } = await supabase
@@ -330,35 +360,6 @@ export async function markAllNotificationsRead(userId: string) {
     .eq('is_read', false);
   
   return { error };
-}
-
-// Receipt scanning
-export async function scanReceipt(imageBase64: string) {
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session) {
-    return { data: null, error: new Error('Not authenticated') };
-  }
-  
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scan-receipt`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ imageBase64 }),
-    }
-  );
-  
-  const result = await response.json();
-  
-  if (!response.ok) {
-    return { data: null, error: new Error(result.error || 'Failed to scan receipt') };
-  }
-  
-  return { data: result.data, error: null };
 }
 
 // Subscribe to notifications

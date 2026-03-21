@@ -5,42 +5,82 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const createFallbackData = () => ({
+  amount: 0,
+  currency: "INR",
+  description: "Scanned receipt",
+  date: null as string | null,
+  category: "other",
+  items: [] as unknown[],
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log("Request received:", req.method);
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: createFallbackData(),
+          warning: "Not signed in. Open Add Expense and fill details manually.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const { imageBase64 } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    let imageBase64: string | undefined;
+    try {
+      const body = await req.json();
+      imageBase64 = body?.imageBase64;
+    } catch {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: createFallbackData(),
+          warning: "Invalid request body.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    if (!imageBase64) {
-      throw new Error("No image provided");
+    if (!imageBase64 || typeof imageBase64 !== "string") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: createFallbackData(),
+          warning: "No image provided.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    console.log("Processing receipt image with AI vision...");
+    const AI_API_KEY = Deno.env.get("AI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
+    console.log("AI API Key presence:", !!AI_API_KEY);
+
+    if (!AI_API_KEY) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: createFallbackData(),
+          warning: "Receipt extraction is not configured. Edit amounts on the next screen.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${AI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-1.5-flash",
         messages: [
           {
             role: "system",
@@ -62,78 +102,65 @@ Respond ONLY with a valid JSON object in this exact format:
   "items": []
 }
 
-If you cannot extract certain information, use null or reasonable defaults.`
+If you cannot extract certain information, use null or reasonable defaults.`,
           },
           {
             role: "user",
             content: [
-              {
-                type: "text",
-                text: "Please analyze this receipt and extract the expense details."
-              },
+              { type: "text", text: "Please analyze this receipt and extract the expense details." },
               {
                 type: "image_url",
                 image_url: {
-                  url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
-                }
-              }
-            ]
-          }
+                  url: imageBase64.startsWith("data:")
+                    ? imageBase64
+                    : `data:image/jpeg;base64,${imageBase64}`,
+                },
+              },
+            ],
+          },
         ],
       }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      
-      throw new Error(`AI gateway error: ${response.status}`);
+      console.error("AI gateway error:", response.status, await response.text());
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: createFallbackData(),
+          warning: "Could not read receipt automatically. Fill in details on the next screen.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
-    console.log("AI response:", content);
-
-    // Parse the JSON response
     let extractedData;
     try {
-      // Try to extract JSON from the response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        extractedData = JSON.parse(jsonMatch[0]);
-      } else {
-        extractedData = JSON.parse(content);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError);
-      extractedData = {
-        amount: 0,
-        currency: "INR",
-        description: "Receipt scan",
-        date: null,
-        category: "other",
-        items: [],
-        raw_response: content
-      };
+      console.log("Parsing AI response content...");
+      const jsonMatch = String(content || "").match(/\{[\s\S]*\}/);
+      extractedData = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
+    } catch (e) {
+      console.error("JSON parse error:", e);
+      extractedData = createFallbackData();
     }
 
+    console.log("Scan successful, returning data.");
     return new Response(JSON.stringify({ success: true, data: extractedData }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error in scan-receipt function:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: createFallbackData(),
+        warning: "Scan failed. Fill in details on the next screen.",
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });

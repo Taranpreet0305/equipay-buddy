@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,11 +31,12 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const menuItems = [
   { icon: CreditCard, label: 'Payment Methods', path: '/payment-methods' },
-  { icon: Shield, label: 'Privacy & Security', path: '/security' },
-  { icon: HelpCircle, label: 'Help & Support', path: '/support' },
+  { icon: Shield, label: 'Privacy & Security', path: '/privacy' },
+  { icon: HelpCircle, label: 'Help & Support', path: '/help' },
 ];
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, profile, groups, logout, refreshProfile } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { 
@@ -45,6 +47,12 @@ export default function Profile() {
     unsubscribe: unsubscribeFromPush 
   } = usePushNotifications(user?.id);
   
+  const [analytics, setAnalytics] = useState({
+    totalExpenses: 0,
+    totalPaid: 0,
+    groupsCount: groups.length,
+    settledCount: 0,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [upiId, setUpiId] = useState(profile?.upi_id || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -99,13 +107,18 @@ export default function Profile() {
     }
   };
 
-  // Analytics
-  const analytics = {
-    totalExpenses: 0,
-    totalPaid: 0,
-    groupsCount: groups.length,
-    settledCount: 0,
-  };
+  useEffect(() => {
+    if (user) {
+      import('@/lib/database').then(({ getUserStats }) => {
+        getUserStats(user.id).then(stats => {
+          setAnalytics({
+            ...stats,
+            groupsCount: groups.length
+          });
+        });
+      });
+    }
+  }, [user, groups.length]);
 
   return (
     <PageLayout>
@@ -124,9 +137,42 @@ export default function Profile() {
                   {profile?.display_name?.charAt(0) || user?.email?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent flex items-center justify-center">
+              <label 
+                htmlFor="avatar-upload"
+                className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent flex items-center justify-center cursor-pointer hover:bg-accent/90 transition-colors shadow-lg"
+              >
                 <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              </button>
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && user) {
+                      const reader = new FileReader();
+                      reader.onloadend = async () => {
+                        setIsSaving(true);
+                        try {
+                          // In a real app, upload to Supabase Storage first
+                          // For now, we'll use a data URL as a shortcut if it's small, 
+                          // but ideally we should prompt for storage bucket setup.
+                          // Let's assume the user has a storage bucket or we update via profile.
+                          const { error } = await updateProfile(user.id, { photo_url: reader.result as string });
+                          if (error) throw error;
+                          await refreshProfile();
+                          toast.success('Profile picture updated!');
+                        } catch (err) {
+                          toast.error('Failed to update profile picture');
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
             </div>
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold mt-2.5 sm:mt-3 truncate px-4">
               {profile?.display_name || 'User'}
@@ -297,6 +343,7 @@ export default function Profile() {
               return (
                 <button
                   key={item.label}
+                  onClick={() => navigate(item.path)}
                   className={`w-full flex items-center gap-2 sm:gap-3 p-3 sm:p-3.5 hover:bg-secondary/50 transition-colors ${
                     index !== menuItems.length - 1 ? 'border-b border-border/50' : ''
                   }`}

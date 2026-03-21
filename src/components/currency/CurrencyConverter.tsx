@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Globe, ArrowRightLeft, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const CURRENCIES = [
@@ -43,25 +44,68 @@ export function CurrencyConverter({
   const [rate, setRate] = useState<number | null>(null);
   const [isConverting, setIsConverting] = useState(false);
 
+  const convertWithPublicApi = async () => {
+    const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency}`);
+    if (!response.ok) throw new Error('Public exchange API failed');
+
+    const data = await response.json();
+    const exchangeRate = data?.rates?.[toCurrency];
+    if (typeof exchangeRate !== 'number') {
+      throw new Error(`Exchange rate for ${toCurrency} not found`);
+    }
+
+    return {
+      exchangeRate,
+      resultAmount: parseFloat(amount) * exchangeRate,
+    };
+  };
+
   const handleConvert = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
 
+    if (fromCurrency === toCurrency) {
+      setConvertedAmount(parseFloat(amount));
+      setRate(1);
+      return;
+    }
+
     setIsConverting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('convert-currency', {
-        body: {
-          from: fromCurrency,
-          to: toCurrency,
-          amount: parseFloat(amount),
-        },
-      });
+      let exchangeRate: number;
+      let resultAmount: number;
 
-      if (error) throw error;
+      try {
+        const { data, error } = await supabase.functions.invoke('convert-currency', {
+          body: {
+            from: fromCurrency,
+            to: toCurrency,
+            amount: parseFloat(amount),
+          },
+        });
 
-      setConvertedAmount(data.data.convertedAmount);
-      setRate(data.data.rate);
+        if (error) throw error;
+
+        const rateFromFunction = data?.data?.rate;
+        const amountFromFunction = data?.data?.convertedAmount;
+
+        if (typeof rateFromFunction !== 'number' || typeof amountFromFunction !== 'number') {
+          throw new Error('Invalid conversion response');
+        }
+
+        exchangeRate = rateFromFunction;
+        resultAmount = amountFromFunction;
+      } catch (functionError) {
+        console.warn('convert-currency function failed, using public API fallback', functionError);
+        const fallback = await convertWithPublicApi();
+        exchangeRate = fallback.exchangeRate;
+        resultAmount = fallback.resultAmount;
+      }
+
+      setConvertedAmount(resultAmount);
+      setRate(exchangeRate);
     } catch (error) {
       console.error('Conversion error:', error);
+      toast.error('Failed to fetch exchange rate. Please try again.');
     } finally {
       setIsConverting(false);
     }
@@ -138,6 +182,7 @@ export function CurrencyConverter({
 
             <button
               onClick={swapCurrencies}
+              aria-label="Swap currencies"
               className="mt-5 w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
             >
               <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />

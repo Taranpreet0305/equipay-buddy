@@ -10,12 +10,17 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
+import GroupSettings from "./pages/GroupSettings";
 import CreateGroup from "./pages/CreateGroup";
+import AddMenu from "./pages/AddMenu";
+import AddGroupOptions from "./pages/AddGroupOptions";
 import AddExpense from "./pages/AddExpense";
 import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
 import Convert from "./pages/Convert";
-import Scan from "./pages/Scan";
+import Help from "./pages/Help";
+import Privacy from "./pages/Privacy";
+import PaymentMethods from "./pages/PaymentMethods";
 import JoinGroup from "./pages/JoinGroup";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -100,10 +105,28 @@ function AppRoutes() {
           <GroupDetail />
         </ProtectedRoute>
       } />
+
+      <Route path="/groups/:id/settings" element={
+        <ProtectedRoute>
+          <GroupSettings />
+        </ProtectedRoute>
+      } />
       
       <Route path="/add-expense" element={
         <ProtectedRoute>
           <AddExpense />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/add" element={
+        <ProtectedRoute>
+          <AddMenu />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/add/group" element={
+        <ProtectedRoute>
+          <AddGroupOptions />
         </ProtectedRoute>
       } />
       
@@ -125,11 +148,9 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      <Route path="/scan" element={
-        <ProtectedRoute>
-          <Scan />
-        </ProtectedRoute>
-      } />
+      <Route path="/help" element={<Help />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/payment-methods" element={<PaymentMethods />} />
 
       <Route path="/join/:code" element={
         <ProtectedRoute>

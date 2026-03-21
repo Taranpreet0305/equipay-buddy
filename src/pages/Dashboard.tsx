@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { BalanceCard } from '@/components/dashboard/BalanceCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
-import { SpendingInsights } from '@/components/insights/SpendingInsights';
 import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
 import { RecurringExpenses } from '@/components/recurring/RecurringExpenses';
 import { DebtSummaryCard } from '@/components/dashboard/DebtSummaryCard';
@@ -220,19 +219,12 @@ export default function Dashboard() {
 
         {/* Recurring Bills */}
         <RecurringExpenses />
-
-        {/* AI Insights */}
-        <SpendingInsights
-          expenses={[]}
-          totalSpent={Object.values(balances.categoryTotals).reduce((a, b) => a + b, 0)}
-          categories={balances.categoryTotals}
-        />
-
-        {/* Groups */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-foreground text-xs">Your Groups</h2>
-            <Link to="/groups" className="text-[10px] text-primary font-medium">See all</Link>
+            <Link to="/groups" className="text-[10px] text-primary font-medium">
+              {groups.length > 3 ? `Show more (${groups.length - 3})` : 'See all'}
+            </Link>
           </div>
 
           {groups.length === 0 ? (

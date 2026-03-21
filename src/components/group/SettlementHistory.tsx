@@ -30,6 +30,8 @@ interface Settlement {
 
 export function SettlementHistory({ groupId, members }: SettlementHistoryProps) {
   const [settlements, setSettlements] = useState<Settlement[]>([]);
+  const [filteredSettlements, setFilteredSettlements] = useState<Settlement[]>([]);
+  const [timeframe, setTimeframe] = useState<'all' | 'day' | 'month' | 'quarter' | 'year'>('all');
   const [isLoading, setIsLoading] = useState(true);
 
   const profileMap = new Map<string, MemberProfile>();
@@ -41,6 +43,10 @@ export function SettlementHistory({ groupId, members }: SettlementHistoryProps) 
     loadSettlements();
   }, [groupId]);
 
+  useEffect(() => {
+    filterSettlements();
+  }, [settlements, timeframe]);
+
   async function loadSettlements() {
     setIsLoading(true);
     const { data, error } = await supabase
@@ -51,6 +57,30 @@ export function SettlementHistory({ groupId, members }: SettlementHistoryProps) 
 
     if (data) setSettlements(data);
     setIsLoading(false);
+  }
+
+  function filterSettlements() {
+    if (timeframe === 'all') {
+      setFilteredSettlements(settlements);
+      return;
+    }
+
+    const now = new Date();
+    let cutoff: Date;
+
+    if (timeframe === 'day') {
+      cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'month') {
+      cutoff = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    } else if (timeframe === 'quarter') {
+      cutoff = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    } else { // year
+      cutoff = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    }
+
+    setFilteredSettlements(
+      settlements.filter(s => new Date(s.completed_at || s.created_at) >= cutoff)
+    );
   }
 
   if (isLoading) {
@@ -71,10 +101,33 @@ export function SettlementHistory({ groupId, members }: SettlementHistoryProps) 
     );
   }
 
-  const totalSettled = settlements.reduce((sum, s) => sum + Number(s.amount), 0);
+  const totalSettled = filteredSettlements.reduce((sum, s) => sum + Number(s.amount), 0);
 
   return (
     <div className="space-y-3">
+      {/* Filters */}
+      <div className="flex bg-secondary/50 p-1 rounded-lg overflow-x-auto gap-1 no-scrollbar">
+        {[
+          { id: 'all', label: 'All' },
+          { id: 'day', label: 'Daily' },
+          { id: 'month', label: 'Monthly' },
+          { id: 'quarter', label: 'Quarterly' },
+          { id: 'year', label: 'Yearly' }
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTimeframe(t.id as any)}
+            className={`px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap ${
+              timeframe === t.id 
+                ? 'bg-primary text-primary-foreground shadow-sm' 
+                : 'text-muted-foreground hover:bg-secondary'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg p-3 border border-green-500/20">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Total Settled</span>
@@ -82,63 +135,69 @@ export function SettlementHistory({ groupId, members }: SettlementHistoryProps) 
             {formatCurrency(totalSettled)}
           </span>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1">
-          {settlements.length} settlement{settlements.length !== 1 ? 's' : ''} completed
+        <p className="text-[10px] text-muted-foreground mt-1 lowercase">
+          {filteredSettlements.length} settlement{filteredSettlements.length !== 1 ? 's' : ''} {timeframe !== 'all' ? `this ${timeframe}` : ''}
         </p>
       </div>
 
-      {settlements.map((settlement, i) => {
-        const fromProfile = profileMap.get(settlement.from_user_id);
-        const toProfile = profileMap.get(settlement.to_user_id);
+      {filteredSettlements.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground/60 text-xs">
+          No settlements found for this timeframe
+        </div>
+      ) : (
+        filteredSettlements.map((settlement, i) => {
+          const fromProfile = profileMap.get(settlement.from_user_id);
+          const toProfile = profileMap.get(settlement.to_user_id);
 
-        return (
-          <motion.div
-            key={settlement.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-            className="bg-card rounded-lg p-3 shadow-soft border border-border/50"
-          >
-            <div className="flex items-center gap-2">
-              <Avatar className="w-7 h-7 flex-shrink-0">
-                <AvatarImage src={fromProfile?.photo_url || undefined} />
-                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                  {fromProfile?.display_name?.charAt(0) || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 text-xs">
-                  <span className="font-medium text-foreground truncate">
-                    {fromProfile?.display_name || 'Unknown'}
-                  </span>
-                  <span className="text-muted-foreground">paid</span>
-                  <span className="font-medium text-foreground truncate">
-                    {toProfile?.display_name || 'Unknown'}
-                  </span>
+          return (
+            <motion.div
+              key={settlement.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="bg-card rounded-lg p-3 shadow-soft border border-border/50"
+            >
+              <div className="flex items-center gap-2">
+                <Avatar className="w-7 h-7 flex-shrink-0">
+                  <AvatarImage src={fromProfile?.photo_url || undefined} />
+                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                    {fromProfile?.display_name?.charAt(0) || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1 text-xs">
+                    <span className="font-medium text-foreground truncate">
+                      {fromProfile?.display_name || 'Unknown'}
+                    </span>
+                    <span className="text-muted-foreground">paid</span>
+                    <span className="font-medium text-foreground truncate">
+                      {toProfile?.display_name || 'Unknown'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {settlement.method === 'upi' ? (
+                      <Smartphone className="w-3 h-3 text-primary" />
+                    ) : (
+                      <Banknote className="w-3 h-3 text-green-500" />
+                    )}
+                    <span className="text-[10px] text-muted-foreground capitalize">{settlement.method}</span>
+                    <span className="text-[10px] text-muted-foreground">·</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(settlement.completed_at || settlement.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  {settlement.method === 'upi' ? (
-                    <Smartphone className="w-3 h-3 text-primary" />
-                  ) : (
-                    <Banknote className="w-3 h-3 text-green-500" />
-                  )}
-                  <span className="text-[10px] text-muted-foreground capitalize">{settlement.method}</span>
-                  <span className="text-[10px] text-muted-foreground">·</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {formatDistanceToNow(new Date(settlement.completed_at || settlement.created_at), { addSuffix: true })}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                    {formatCurrency(Number(settlement.amount))}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                  {formatCurrency(Number(settlement.amount))}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
+            </motion.div>
+          );
+        })
+      )}
     </div>
   );
 }

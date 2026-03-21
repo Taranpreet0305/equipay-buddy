@@ -3,15 +3,15 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Users, Receipt, PieChart, CreditCard, ArrowRight, Check, Globe, MessageCircle, Sparkles, Shield, WifiOff } from 'lucide-react';
-import logoImg from '@/assets/logo.png';
+
 const features = [{
   icon: Users,
   title: 'Group Expenses',
   description: 'Split bills with friends'
 }, {
   icon: Receipt,
-  title: 'Receipt Scan',
-  description: 'Auto-extract with AI'
+  title: 'Expense Tracking',
+  description: 'Log bills in seconds'
 }, {
   icon: Globe,
   title: 'Multi-Currency',
@@ -22,14 +22,14 @@ const features = [{
   description: 'Discuss & remind'
 }, {
   icon: Sparkles,
-  title: 'AI Insights',
-  description: 'Smart budgeting'
+  title: 'Spending Insights',
+  description: 'Track your habits'
 }, {
   icon: CreditCard,
   title: 'UPI Pay',
   description: 'Settle instantly'
 }];
-const benefits = ['Split expenses equally or custom', 'Real-time currency conversion', 'AI-powered spending insights', 'Works offline - sync when online'];
+const benefits = ['Split expenses equally or custom', 'Real-time currency conversion', 'Detailed spending analytics', 'Works offline - sync when online'];
 export default function Landing() {
   return <div className="min-h-screen bg-background overflow-hidden">
       {/* Hero Section */}
@@ -42,7 +42,7 @@ export default function Landing() {
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden flex items-center justify-center">
-                <img src={logoImg} alt="EquiPay" className="w-full h-full object-cover" />
+                <img src="/logo2.png" alt="EquiPay" className="w-full h-full object-cover" />
               </div>
               <span className="text-xl sm:text-2xl font-bold">EquiPay</span>
             </div>
@@ -208,11 +208,6 @@ export default function Landing() {
           <div className="flex items-center gap-2 sm:gap-2.5">
             <WifiOff className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-xs sm:text-sm font-medium">Works Offline</span>
-          </div>
-          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-xs sm:text-sm font-medium">AI Powered</span>
           </div>
         </motion.div>
       </div>

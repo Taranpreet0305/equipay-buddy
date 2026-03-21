@@ -1,7 +1,8 @@
 project_id = "coaceecwalmcglsyzhhg"
 
 [functions.scan-receipt]
-verify_jwt = true
+# Let handler run so we always return 200 + fallback JSON (avoids gateway 401 before body is parsed)
+verify_jwt = false
 
 [functions.send-notification]
 verify_jwt = true
