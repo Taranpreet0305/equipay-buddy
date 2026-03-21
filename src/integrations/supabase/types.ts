@@ -158,6 +158,50 @@ export type Database = {
           },
         ]
       }
+      group_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          group_id: string
+          id: string
+          invite_code: string
+          is_active: boolean
+          max_uses: number | null
+          use_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          group_id: string
+          id?: string
+          invite_code?: string
+          is_active?: boolean
+          max_uses?: number | null
+          use_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          group_id?: string
+          id?: string
+          invite_code?: string
+          is_active?: boolean
+          max_uses?: number | null
+          use_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_invites_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           group_id: string
