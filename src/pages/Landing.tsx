@@ -21,6 +21,34 @@ const stats = [
   { value: '10K+', label: 'Groups Created' },
 ];
 
+import { Users, Receipt, PieChart, CreditCard, ArrowRight, Check, Globe, MessageCircle, Sparkles, Shield, WifiOff } from 'lucide-react';
+
+const features = [{
+  icon: Users,
+  title: 'Group Expenses',
+  description: 'Split bills with friends'
+}, {
+  icon: Receipt,
+  title: 'Expense Tracking',
+  description: 'Log bills in seconds'
+}, {
+  icon: Globe,
+  title: 'Multi-Currency',
+  description: 'Travel-friendly'
+}, {
+  icon: MessageCircle,
+  title: 'Group Chat',
+  description: 'Discuss & remind'
+}, {
+  icon: Sparkles,
+  title: 'Spending Insights',
+  description: 'Track your habits'
+}, {
+  icon: CreditCard,
+  title: 'UPI Pay',
+  description: 'Settle instantly'
+}];
+const benefits = ['Split expenses equally or custom', 'Real-time currency conversion', 'Detailed spending analytics', 'Works offline - sync when online'];
 export default function Landing() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -66,6 +94,14 @@ export default function Landing() {
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 mb-6 text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               AI-Powered Expense Splitting
+        <div className="relative z-10 px-5 sm:px-6 pt-6 sm:pt-8 pb-8 text-primary-foreground flex-1 flex flex-col">
+          {/* Top bar */}
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden flex items-center justify-center">
+                <img src="/logo2.png" alt="EquiPay" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-xl sm:text-2xl font-bold">EquiPay</span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-6 leading-tight tracking-tight">
@@ -283,4 +319,47 @@ export default function Landing() {
       </footer>
     </div>
   );
+      {/* Trust Section */}
+      <div className="px-5 sm:px-6 py-8 sm:py-10">
+        <motion.div initial={{
+        opacity: 0
+      }} whileInView={{
+        opacity: 1
+      }} viewport={{
+        once: true
+      }} className="flex items-center justify-center gap-5 sm:gap-8 text-muted-foreground">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-medium">Secure</span>
+          </div>
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <WifiOff className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-medium">Works Offline</span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="px-5 sm:px-6 py-10 sm:py-14 pb-14 sm:pb-24">
+        <motion.div initial={{
+        opacity: 0,
+        scale: 0.95
+      }} whileInView={{
+        opacity: 1,
+        scale: 1
+      }} viewport={{
+        once: true
+      }} className="gradient-primary rounded-2xl sm:rounded-3xl p-7 sm:p-10 text-center text-primary-foreground max-w-lg mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">Start splitting smarter</h2>
+          <p className="opacity-80 mb-6 sm:mb-8 text-sm sm:text-base">Join thousands of users managing shared expenses</p>
+          <Link to="/auth">
+            <Button variant="glass" size="lg" className="w-full sm:w-auto text-primary-foreground border-white/20 h-13 sm:h-14 text-base px-8">
+              Get Started Free
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
+    </div>;
 }

@@ -1,17 +1,16 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Plus, Users, Globe, Scan } from 'lucide-react';
+import { Plus, Users, Globe } from 'lucide-react';
 
 const actions = [
   { icon: Plus, label: 'Add', path: '/add-expense', color: 'bg-primary' },
   { icon: Users, label: 'Group', path: '/groups/new', color: 'bg-accent' },
   { icon: Globe, label: 'Convert', path: '/convert', color: 'bg-success' },
-  { icon: Scan, label: 'Scan', path: '/scan', color: 'bg-warning' },
 ];
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-3 gap-2">
       {actions.map((action, index) => {
         const Icon = action.icon;
         return (

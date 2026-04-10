@@ -162,19 +162,38 @@ export function SettleDialog({
               <ExternalLink className="w-5 h-5 text-primary" />
             </motion.button>
 
-            {/* Show UPI ID if on desktop */}
-            {toUser.upiId && !isMobileDevice() && (
-              <div className="bg-secondary rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">UPI ID</p>
-                    <p className="font-mono font-medium text-foreground">{toUser.upiId}</p>
+            {/* Show UPI ID and QR if on desktop or if user needs it */}
+            {toUser.upiId && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-secondary/50 rounded-2xl p-4 border border-border/50 text-center space-y-3"
+              >
+                <div className="space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Scan to Pay {toUser.name}</p>
+                  <div className="bg-white p-2 rounded-xl inline-block shadow-soft mx-auto">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(generateUPILink(toUser.upiId, amount, toUser.name, `EquiPay settlement`))}`} 
+                      alt="UPI QR Code" 
+                      className="w-32 h-32"
+                    />
                   </div>
-                  <Button variant="ghost" size="icon" onClick={copyUPIId}>
-                    <Copy className="w-4 h-4" />
+                </div>
+                
+                <div className="flex items-center justify-between bg-card rounded-xl p-2.5 border border-border/50">
+                  <div className="text-left min-w-0">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">UPI ID</p>
+                    <p className="font-mono text-xs font-bold text-foreground truncate">{toUser.upiId}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={copyUPIId} className="h-8 w-8 rounded-lg">
+                    <Copy className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-              </div>
+                
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Scan this QR code with any UPI app (GPay, PhonePe, Paytm) to pay the exact amount.
+                </p>
+              </motion.div>
             )}
 
             {/* Cash Option */}
@@ -189,8 +208,8 @@ export function SettleDialog({
                 <Banknote className="w-6 h-6 text-accent" />
               </div>
               <div className="flex-1 text-left">
-                <p className="font-semibold text-foreground">Paid in Cash</p>
-                <p className="text-sm text-muted-foreground">Mark as settled manually</p>
+                <p className="font-semibold text-foreground">Mark as Settled Manually</p>
+                <p className="text-sm text-muted-foreground">For cash or other external payments</p>
               </div>
               {selectedMethod === 'cash' && isSettling ? (
                 <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />

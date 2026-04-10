@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import {
   ArrowLeft, Plus, Settings, Users, Receipt, TrendingUp,
   MessageCircle, Loader2, UserPlus, History, Download
 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
@@ -19,6 +20,7 @@ import { exportGroupExpensesCSV } from '@/lib/exportCSV';
 
 export default function GroupDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('expenses');
   const [group, setGroup] = useState<GroupDB | null>(null);
@@ -89,7 +91,10 @@ export default function GroupDetail() {
               >
                 <MessageCircle className="w-4 h-4" />
               </button>
-              <button className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+              <button 
+                onClick={() => navigate(`/groups/${id}/settings`)}
+                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center transition-colors hover:bg-white/20"
+              >
                 <Settings className="w-4 h-4" />
               </button>
             </div>
@@ -124,6 +129,10 @@ export default function GroupDetail() {
               <TabsTrigger value="settlements" className="flex-1 rounded-md text-xs">
                 <History className="w-3.5 h-3.5 mr-1" />
                 History
+              </TabsTrigger>
+              <TabsTrigger value="members" className="flex-1 rounded-md text-xs">
+                <Users className="w-3.5 h-3.5 mr-1" />
+                Members
               </TabsTrigger>
             </TabsList>
 
@@ -190,6 +199,37 @@ export default function GroupDetail() {
 
             <TabsContent value="settlements" className="mt-3">
               <SettlementHistory groupId={id!} members={members} />
+            </TabsContent>
+
+            <TabsContent value="members" className="mt-3 space-y-2">
+              <div className="flex items-center justify-between px-1 mb-2">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Group Participants</p>
+                <button 
+                    onClick={() => setIsInviteOpen(true)}
+                    className="text-[10px] text-primary font-bold flex items-center gap-1"
+                >
+                    <UserPlus className="w-3 h-3" /> Invite
+                </button>
+              </div>
+              {members.map((member) => (
+                <div key={member.id} className="bg-card rounded-lg p-3 shadow-soft border border-border/50 flex items-center gap-3">
+                  <Avatar className="w-9 h-9 border border-primary/10">
+                    <AvatarImage src={member.profiles?.photo_url || undefined} />
+                    <AvatarFallback className="bg-primary/5 text-primary text-xs">
+                      {member.profiles?.display_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-xs truncate">{member.profiles?.display_name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                        {member.profiles?.upi_id ? `UPI: ${member.profiles.upi_id}` : 'No UPI ID set'}
+                    </p>
+                  </div>
+                  {member.user_id === user?.id && (
+                    <span className="text-[8px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">YOU</span>
+                  )}
+                </div>
+              ))}
             </TabsContent>
           </Tabs>
         </div>

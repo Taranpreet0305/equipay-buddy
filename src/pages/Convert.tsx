@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CurrencyConverter } from '@/components/currency/CurrencyConverter';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ArrowLeft } from 'lucide-react';

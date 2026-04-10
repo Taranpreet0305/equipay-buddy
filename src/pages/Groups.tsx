@@ -3,18 +3,31 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Users } from 'lucide-react';
+import { Plus, Search, Users, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Groups() {
   const { groups } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [joinCode, setJoinCode] = useState('');
 
   const filteredGroups = groups.filter(g => 
     g.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleJoinByCode = () => {
+    const normalizedCode = joinCode.trim();
+    if (!normalizedCode) {
+      toast.error('Please enter an invite code');
+      return;
+    }
+
+    navigate(`/join/${encodeURIComponent(normalizedCode)}`);
+  };
 
   return (
     <PageLayout>
@@ -29,11 +42,43 @@ export default function Groups() {
             <h1 className="text-lg sm:text-xl font-bold text-foreground">Groups</h1>
             <p className="text-xs text-muted-foreground">Manage your expense groups</p>
           </div>
-          <Link to="/groups/new">
+          <Link to="/add/group">
             <Button variant="gradient" size="icon" className="rounded-lg w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0">
               <Plus className="w-4 h-4" />
             </Button>
           </Link>
+        </motion.div>
+
+        {/* Join Group */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <UserPlus className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground text-xs sm:text-sm">Join a Group</h2>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Paste invite code to join instantly</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Enter invite code"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleJoinByCode();
+              }}
+              className="h-10 rounded-lg bg-secondary border-0 text-sm"
+            />
+            <Button onClick={handleJoinByCode} size="sm" variant="gradient" className="h-10 px-3">
+              Join
+            </Button>
+          </div>
         </motion.div>
 
         {/* Search */}
@@ -69,7 +114,7 @@ export default function Groups() {
               {searchQuery ? 'Try a different search' : 'Create a group to start splitting expenses with friends'}
             </p>
             {!searchQuery && (
-              <Link to="/groups/new">
+              <Link to="/add/group">
                 <Button variant="gradient" size="sm">
                   <Plus className="w-4 h-4" />
                   Create Group
