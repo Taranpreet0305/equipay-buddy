@@ -2,60 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 150 20% 98%;
-    --foreground: 160 30% 10%;
+    --background: 220 20% 97%;
+    --foreground: 230 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 160 30% 10%;
+    --card-foreground: 230 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 30% 10%;
+    --popover-foreground: 230 25% 12%;
 
-    --primary: 160 84% 32%;
+    --primary: 250 76% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 25% 95%;
-    --secondary-foreground: 160 30% 20%;
+    --secondary: 240 20% 95%;
+    --secondary-foreground: 230 25% 20%;
 
-    --muted: 150 15% 94%;
-    --muted-foreground: 160 15% 45%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 18 90% 55%;
+    --accent: 340 82% 58%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
+    --success: 152 69% 40%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 160 20% 90%;
-    --input: 160 20% 90%;
-    --ring: 160 84% 32%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 250 76% 58%;
 
     --radius: 1rem;
 
-    /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 32%) 0%, hsl(175, 84%, 28%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(18, 90%, 55%) 0%, hsl(28, 90%, 50%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(150, 20%, 98%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(160, 84%, 32%) 0%, hsl(180, 70%, 25%) 50%, hsl(200, 60%, 30%) 100%);
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(160 30% 10% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(160 30% 10% / 0.07), 0 2px 4px -2px hsl(160 30% 10% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(160 30% 10% / 0.08), 0 4px 6px -4px hsl(160 30% 10% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(160 30% 10% / 0.1), 0 8px 10px -6px hsl(160 30% 10% / 0.05);
-    --shadow-glow: 0 0 20px hsl(160 84% 32% / 0.3);
-    --shadow-soft: 0 2px 8px -2px hsl(160 30% 10% / 0.1), 0 4px 12px -4px hsl(160 30% 10% / 0.08);
-    --shadow-elevated: 0 8px 24px -4px hsl(160 30% 10% / 0.12), 0 4px 8px -2px hsl(160 30% 10% / 0.06);
+    --gradient-primary: linear-gradient(135deg, hsl(250, 76%, 58%) 0%, hsl(280, 72%, 55%) 50%, hsl(340, 82%, 58%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(340, 82%, 58%) 0%, hsl(15, 90%, 58%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(220, 20%, 97%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(250, 76%, 58%) 0%, hsl(280, 72%, 55%) 40%, hsl(340, 82%, 58%) 100%);
+
+    --shadow-sm: 0 1px 2px 0 hsl(230 25% 12% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(230 25% 12% / 0.06), 0 2px 4px -2px hsl(230 25% 12% / 0.04);
+    --shadow-lg: 0 10px 15px -3px hsl(230 25% 12% / 0.08), 0 4px 6px -4px hsl(230 25% 12% / 0.04);
+    --shadow-xl: 0 20px 25px -5px hsl(230 25% 12% / 0.1), 0 8px 10px -6px hsl(230 25% 12% / 0.04);
+    --shadow-glow: 0 0 24px hsl(250 76% 58% / 0.25);
+    --shadow-soft: 0 2px 8px -2px hsl(230 25% 12% / 0.08), 0 4px 12px -4px hsl(230 25% 12% / 0.06);
+    --shadow-elevated: 0 8px 24px -4px hsl(230 25% 12% / 0.1), 0 4px 8px -2px hsl(230 25% 12% / 0.05);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -64,65 +62,65 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 250 76% 58%;
   }
 
   .dark {
-    --background: 160 30% 6%;
-    --foreground: 150 20% 95%;
+    --background: 230 20% 8%;
+    --foreground: 220 20% 95%;
 
-    --card: 160 25% 10%;
-    --card-foreground: 150 20% 95%;
+    --card: 230 18% 12%;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 160 25% 10%;
-    --popover-foreground: 150 20% 95%;
+    --popover: 230 18% 12%;
+    --popover-foreground: 220 20% 95%;
 
-    --primary: 160 70% 45%;
-    --primary-foreground: 160 30% 6%;
+    --primary: 250 76% 65%;
+    --primary-foreground: 230 20% 8%;
 
-    --secondary: 160 20% 15%;
-    --secondary-foreground: 150 20% 90%;
+    --secondary: 230 15% 16%;
+    --secondary-foreground: 220 20% 88%;
 
-    --muted: 160 20% 15%;
-    --muted-foreground: 160 15% 55%;
+    --muted: 230 15% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 18 85% 55%;
+    --accent: 340 82% 62%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 45%;
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 40%;
+    --success: 152 65% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 85% 50%;
+    --warning: 38 85% 52%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 160 20% 18%;
-    --input: 160 20% 18%;
-    --ring: 160 70% 45%;
+    --border: 230 15% 20%;
+    --input: 230 15% 20%;
+    --ring: 250 76% 65%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(160, 70%, 45%) 0%, hsl(175, 70%, 40%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(18, 85%, 55%) 0%, hsl(28, 85%, 50%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(160, 25%, 10%) 0%, hsl(160, 30%, 8%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(160, 50%, 20%) 0%, hsl(180, 50%, 18%) 50%, hsl(200, 45%, 20%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(250, 76%, 65%) 0%, hsl(280, 72%, 60%) 50%, hsl(340, 82%, 62%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(340, 82%, 62%) 0%, hsl(15, 90%, 60%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(230, 18%, 12%) 0%, hsl(230, 20%, 10%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(250, 60%, 30%) 0%, hsl(280, 55%, 28%) 40%, hsl(340, 60%, 30%) 100%);
 
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.6), 0 8px 10px -6px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 20px hsl(160 70% 45% / 0.3);
-    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.3), 0 4px 12px -4px hsl(0 0% 0% / 0.25);
-    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.4), 0 4px 8px -2px hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.25);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.35), 0 2px 4px -2px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 24px hsl(250 76% 65% / 0.3);
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.25), 0 4px 12px -4px hsl(0 0% 0% / 0.2);
+    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.35), 0 4px 8px -2px hsl(0 0% 0% / 0.18);
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 230 18% 10%;
+    --sidebar-foreground: 220 20% 95%;
+    --sidebar-primary: 250 76% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 230 15% 16%;
+    --sidebar-accent-foreground: 220 20% 95%;
+    --sidebar-border: 230 15% 20%;
+    --sidebar-ring: 250 76% 65%;
   }
 }
 
@@ -137,9 +135,13 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'DM Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
     overflow-x: hidden;
     max-width: 100vw;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
   }
 }
 
@@ -212,14 +214,12 @@
   }
 }
 
-/* Responsive breakpoints for extra small devices */
 @media screen and (max-width: 359px) {
   html {
     font-size: 14px;
   }
 }
 
-/* Ensure content doesn't overflow */
 @media screen and (max-width: 480px) {
   .container {
     padding-left: 1rem;
