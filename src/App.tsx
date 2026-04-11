@@ -22,6 +22,7 @@ import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
 import PaymentMethods from "./pages/PaymentMethods";
 import JoinGroup from "./pages/JoinGroup";
+import PersonalBudget from "./pages/PersonalBudget";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -157,6 +158,14 @@ function AppRoutes() {
           <JoinGroup />
         </ProtectedRoute>
       } />
+
+      <Route path="/personal-budget" element={
+        <ProtectedRoute>
+          <PersonalBudget />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="*" element={<NotFound />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
