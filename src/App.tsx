@@ -22,6 +22,7 @@ import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
 import PaymentMethods from "./pages/PaymentMethods";
 import JoinGroup from "./pages/JoinGroup";
+import PersonalBudget from "./pages/PersonalBudget";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -31,10 +32,12 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
-          <span className="text-xl sm:text-2xl">💰</span>
+        <div className="animate-pulse">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gradient tracking-tight" style={{ fontFamily: 'Space Grotesk' }}>
+            EquiPay
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2">Loading...</p>
         </div>
-        <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-primary mx-auto" />
       </div>
     </div>
   );
@@ -157,6 +160,14 @@ function AppRoutes() {
           <JoinGroup />
         </ProtectedRoute>
       } />
+
+      <Route path="/personal-budget" element={
+        <ProtectedRoute>
+          <PersonalBudget />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="*" element={<NotFound />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

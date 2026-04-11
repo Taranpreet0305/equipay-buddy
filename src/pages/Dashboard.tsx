@@ -5,9 +5,10 @@ import { QuickActions } from '@/components/dashboard/QuickActions';
 import { SpendingAnalytics } from '@/components/analytics/SpendingAnalytics';
 import { RecurringExpenses } from '@/components/recurring/RecurringExpenses';
 import { DebtSummaryCard } from '@/components/dashboard/DebtSummaryCard';
+import { SpendingInsights } from '@/components/insights/SpendingInsights';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, Users, ChevronRight, Receipt, Banknote, Smartphone, Plus } from 'lucide-react';
+import { Users, ChevronRight, Receipt, Banknote, Smartphone, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -135,24 +136,15 @@ export default function Dashboard() {
                 </h1>
               </div>
             </div>
-
             <div className="flex items-center gap-2 flex-shrink-0">
               <ThemeToggle />
-              <Link to="/activity" className="relative w-9 h-9 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
-                <Bell className="w-4 h-4 text-muted-foreground" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </Link>
             </div>
           </motion.div>
         </div>
 
         {/* Main content */}
         <div className="px-4 sm:px-6 space-y-4 pb-4">
-          {/* Balance + Quick Actions row on large screens */}
+          {/* Balance + Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
               <BalanceCard
@@ -167,7 +159,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Analytics + Debt Summary side by side on large screens */}
+          {/* Analytics + Debt Summary side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <SpendingAnalytics categoryData={balances.categoryTotals} />
             <DebtSummaryCard />
@@ -180,7 +172,7 @@ export default function Dashboard() {
             categories={balances.categoryTotals}
           />
 
-          {/* Groups + Recent Activity side by side on large screens */}
+          {/* Groups + Recent Activity side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Groups */}
             <div className="space-y-2">
@@ -233,24 +225,6 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Debt Simplification Summary */}
-        <DebtSummaryCard />
-
-        {/* Spending Analytics */}
-        <SpendingAnalytics categoryData={balances.categoryTotals} />
-
-        {/* Recurring Bills */}
-        <RecurringExpenses />
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-foreground text-xs">Your Groups</h2>
-            <Link to="/groups" className="text-[10px] text-primary font-medium">
-              {groups.length > 3 ? `Show more (${groups.length - 3})` : 'See all'}
-            </Link>
-          </div>
 
             {/* Recent Activity */}
             <div className="space-y-2">

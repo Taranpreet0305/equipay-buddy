@@ -7,36 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  ArrowLeft, 
-  Receipt, 
-  Camera,
-  Utensils, 
-  Car, 
-  ShoppingBag, 
-  Film, 
-  Zap, 
-  Home, 
-  Plane, 
-  Heart, 
-  MoreHorizontal,
-  Loader2,
-  Users,
-  Plus
+  ArrowLeft, Receipt, Camera, Utensils, Car, ShoppingBag, Film, Zap, Home, Plane, Heart, MoreHorizontal, Loader2, Users, Plus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { createExpense, getGroupWithMembers, GroupMemberDB } from '@/lib/database';
 import { notifyExpenseAdded } from '@/lib/notifications';
 import { Link } from 'react-router-dom';
+import { ScanReceiptDialog } from '@/components/receipt/ScanReceiptDialog';
 
 const categories = [
   { value: 'food', label: 'Food & Drinks', icon: Utensils },
@@ -79,16 +62,9 @@ export default function AddExpense() {
   useEffect(() => {
     const state = location.state as { amount?: number; description?: string; category?: string } | null;
     if (!state) return;
-
-    if (typeof state.amount === 'number' && Number.isFinite(state.amount) && state.amount > 0) {
-      setAmount(state.amount.toString());
-    }
-    if (typeof state.description === 'string' && state.description.trim()) {
-      setDescription(state.description.trim());
-    }
-    if (typeof state.category === 'string' && categories.some((c) => c.value === state.category)) {
-      setCategory(state.category);
-    }
+    if (typeof state.amount === 'number' && Number.isFinite(state.amount) && state.amount > 0) setAmount(state.amount.toString());
+    if (typeof state.description === 'string' && state.description.trim()) setDescription(state.description.trim());
+    if (typeof state.category === 'string' && categories.some(c => c.value === state.category)) setCategory(state.category);
   }, [location.state]);
 
   useEffect(() => {
@@ -98,7 +74,6 @@ export default function AddExpense() {
         if (members) {
           setGroupMembers(members);
           setSelectedMembers(members.map(m => m.user_id));
-          // Initialize custom amounts
           const amts: Record<string, string> = {};
           members.forEach(m => { amts[m.user_id] = ''; });
           setCustomAmounts(amts);
@@ -113,27 +88,15 @@ export default function AddExpense() {
   }, [selectedGroup]);
 
   const handleSelectAll = () => {
-    if (selectedMembers.length === groupMembers.length) {
-      setSelectedMembers([]);
-    } else {
-      setSelectedMembers(groupMembers.map(m => m.user_id));
-    }
+    if (selectedMembers.length === groupMembers.length) setSelectedMembers([]);
+    else setSelectedMembers(groupMembers.map(m => m.user_id));
   };
 
   const toggleMember = (userId: string) => {
-    setSelectedMembers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
+    setSelectedMembers(prev => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
   };
 
-  const handleScanComplete = (data: {
-    amount: number;
-    currency: string;
-    description: string;
-    category: string;
-  }) => {
+  const handleScanComplete = (data: { amount: number; currency: string; description: string; category: string }) => {
     setAmount(data.amount.toString());
     setDescription(data.description);
     setCategory(data.category);
@@ -152,15 +115,9 @@ export default function AddExpense() {
       toast.error('Please fill in all required fields');
       return;
     }
-
-    if (!user) {
-      toast.error('Please sign in to add an expense');
-      return;
-    }
+    if (!user) { toast.error('Please sign in to add an expense'); return; }
 
     const amountNum = parseFloat(amount);
-
-    // Validate custom amounts
     if (splitType === 'exact') {
       if (Math.abs(customTotal - amountNum) > 0.01) {
         toast.error(`Custom amounts (₹${customTotal.toFixed(2)}) don't match total (₹${amountNum.toFixed(2)})`);
@@ -169,37 +126,18 @@ export default function AddExpense() {
     }
 
     setIsSubmitting(true);
-
     try {
       const splits = selectedMembers.map(userId => {
         let splitAmount = amountNum / selectedMembers.length;
-        if (splitType === 'exact') {
-          splitAmount = parseFloat(customAmounts[userId] || '0');
-        }
+        if (splitType === 'exact') splitAmount = parseFloat(customAmounts[userId] || '0');
         return { userId, amount: splitAmount };
       });
 
-      const { error } = await createExpense(
-        selectedGroup,
-        description,
-        amountNum,
-        user.id,
-        splitType,
-        category,
-        splits,
-        notes || undefined
-      );
-
+      const { error } = await createExpense(selectedGroup, description, amountNum, user.id, splitType, category, splits, notes || undefined);
       if (error) throw error;
 
-      const profile = groupMembers.find(m => m.user_id === user.id)?.profiles;
-      notifyExpenseAdded(
-        selectedGroup,
-        description,
-        amountNum,
-        profile?.display_name || 'Someone',
-        user.id
-      );
+      const memberProfile = groupMembers.find(m => m.user_id === user.id)?.profiles;
+      notifyExpenseAdded(selectedGroup, description, amountNum, memberProfile?.display_name || 'Someone', user.id);
 
       await refreshGroups();
       toast.success('Expense added successfully!');
@@ -225,7 +163,6 @@ export default function AddExpense() {
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 hover:bg-secondary/80 transition-colors"
             aria-label="Go back"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center flex-shrink-0"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
@@ -235,30 +172,24 @@ export default function AddExpense() {
           </div>
         </motion.div>
 
-        {/* Tabs: Add Expense / Add Group */}
+        {/* Tabs */}
         <div className="flex bg-secondary rounded-xl p-1 mb-6">
           <button
             onClick={() => setActiveTab('expense')}
             className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'expense' ? 'bg-card text-foreground shadow-soft' : 'text-muted-foreground'}`}
           >
-            <Receipt className="w-4 h-4" />
-            Add Expense
+            <Receipt className="w-4 h-4" /> Add Expense
           </button>
           <button
             onClick={() => setActiveTab('group')}
             className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'group' ? 'bg-card text-foreground shadow-soft' : 'text-muted-foreground'}`}
           >
-            <Users className="w-4 h-4" />
-            Add Group
+            <Users className="w-4 h-4" /> Add Group
           </button>
         </div>
 
         {activeTab === 'group' ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl p-8 shadow-soft border border-border/50 text-center"
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl p-8 shadow-soft border border-border/50 text-center">
             <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-primary-foreground" />
             </div>
@@ -266,18 +197,12 @@ export default function AddExpense() {
             <p className="text-sm text-muted-foreground mb-6">Start a group to split expenses with friends, roommates, or travel buddies.</p>
             <Link to="/groups/new">
               <Button variant="gradient" size="lg" className="rounded-xl">
-                <Plus className="w-5 h-5" />
-                Create Group
+                <Plus className="w-5 h-5" /> Create Group
               </Button>
             </Link>
           </motion.div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-5"
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-5">
             {/* Amount Input */}
             <div className="bg-card rounded-2xl p-6 shadow-soft border border-border/50 text-center">
               <Label className="text-muted-foreground text-sm">Amount</Label>
@@ -291,47 +216,29 @@ export default function AddExpense() {
                   className="text-4xl font-bold text-foreground bg-transparent border-none outline-none text-center w-40"
                 />
               </div>
-              <button 
-                onClick={() => setShowScanDialog(true)}
-                className="mt-3 flex items-center gap-2 text-sm text-primary font-medium mx-auto hover:underline"
-              >
-                <Camera className="w-4 h-4" />
-                Scan Receipt
+              <button onClick={() => setShowScanDialog(true)} className="mt-3 flex items-center gap-2 text-sm text-primary font-medium mx-auto hover:underline">
+                <Camera className="w-4 h-4" /> Scan Receipt
               </button>
             </div>
-          </div>
 
             {/* Group Selection */}
             <div className="space-y-2">
               <Label>Select Group</Label>
               <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-                <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue placeholder="Choose a group" />
-                </SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Choose a group" /></SelectTrigger>
                 <SelectContent>
                   {groups.map((group) => (
-                    <SelectItem key={group.id} value={group.id}>
-                      {group.name}
-                    </SelectItem>
+                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {groups.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Create a group first to add expenses
-                </p>
-              )}
+              {groups.length === 0 && <p className="text-xs text-muted-foreground">Create a group first to add expenses</p>}
             </div>
 
             {/* Description */}
             <div className="space-y-2">
               <Label>Description</Label>
-              <Input
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="What was this expense for?"
-                className="h-12 rounded-xl"
-              />
+              <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What was this expense for?" className="h-12 rounded-xl" />
             </div>
 
             {/* Category */}
@@ -342,15 +249,7 @@ export default function AddExpense() {
                   const Icon = cat.icon;
                   const isSelected = category === cat.value;
                   return (
-                    <button
-                      key={cat.value}
-                      onClick={() => setCategory(cat.value)}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${
-                        isSelected 
-                          ? 'bg-primary text-primary-foreground shadow-glow' 
-                          : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                      }`}
-                    >
+                    <button key={cat.value} onClick={() => setCategory(cat.value)} className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${isSelected ? 'bg-primary text-primary-foreground shadow-glow' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
                       <Icon className="w-5 h-5" />
                       <span className="text-[9px] leading-tight">{cat.label.split(' ')[0]}</span>
                     </button>
@@ -362,15 +261,7 @@ export default function AddExpense() {
                   const Icon = cat.icon;
                   const isSelected = category === cat.value;
                   return (
-                    <button
-                      key={cat.value}
-                      onClick={() => setCategory(cat.value)}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${
-                        isSelected 
-                          ? 'bg-primary text-primary-foreground shadow-glow' 
-                          : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                      }`}
-                    >
+                    <button key={cat.value} onClick={() => setCategory(cat.value)} className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${isSelected ? 'bg-primary text-primary-foreground shadow-glow' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
                       <Icon className="w-5 h-5" />
                       <span className="text-[9px] leading-tight">{cat.label.split(' ')[0]}</span>
                     </button>
@@ -383,14 +274,10 @@ export default function AddExpense() {
             <div className="space-y-2">
               <Label>Split Type</Label>
               <Select value={splitType} onValueChange={(v: 'equal' | 'exact' | 'percentage' | 'shares') => setSplitType(v)}>
-                <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {splitTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -401,10 +288,7 @@ export default function AddExpense() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label>Split Between</Label>
-                  <button 
-                    onClick={handleSelectAll}
-                    className="text-sm text-primary font-medium"
-                  >
+                  <button onClick={handleSelectAll} className="text-sm text-primary font-medium">
                     {selectedMembers.length === groupMembers.length ? 'Deselect All' : 'Select All'}
                   </button>
                 </div>
@@ -416,41 +300,24 @@ export default function AddExpense() {
                 ) : (
                   <div className="space-y-2">
                     {groupMembers.map((member) => {
-                      const profile = member.profiles;
-                      if (!profile) return null;
+                      const memberProfile = member.profiles;
+                      if (!memberProfile) return null;
                       const isSelected = selectedMembers.includes(member.user_id);
                       
                       return (
-                        <div
-                          key={member.id}
-                          className={`rounded-xl transition-all border-2 ${
-                            isSelected
-                              ? 'bg-primary/5 border-primary'
-                              : 'bg-secondary border-transparent'
-                          }`}
-                        >
-                          <div
-                            onClick={() => toggleMember(member.user_id)}
-                            className="flex items-center gap-3 p-3 cursor-pointer"
-                          >
-                            <Checkbox 
-                              checked={isSelected}
-                              className="pointer-events-none"
-                            />
+                        <div key={member.id} className={`rounded-xl transition-all border-2 ${isSelected ? 'bg-primary/5 border-primary' : 'bg-secondary border-transparent'}`}>
+                          <div onClick={() => toggleMember(member.user_id)} className="flex items-center gap-3 p-3 cursor-pointer">
+                            <Checkbox checked={isSelected} className="pointer-events-none" />
                             <Avatar className="w-10 h-10 flex-shrink-0">
-                              <AvatarImage src={profile.photo_url || undefined} />
-                              <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                                {profile.display_name?.charAt(0)}
-                              </AvatarFallback>
+                              <AvatarImage src={memberProfile.photo_url || undefined} />
+                              <AvatarFallback className="bg-primary/10 text-primary text-sm">{memberProfile.display_name?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-foreground text-sm truncate">
-                                {profile.display_name}
-                                {member.user_id === user?.id && (
-                                  <span className="text-xs text-muted-foreground ml-2">(You)</span>
-                                )}
+                                {memberProfile.display_name}
+                                {member.user_id === user?.id && <span className="text-xs text-muted-foreground ml-2">(You)</span>}
                               </p>
-                              <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                              <p className="text-xs text-muted-foreground truncate">{memberProfile.email}</p>
                             </div>
                             {isSelected && splitType === 'equal' && amount && (
                               <span className="font-semibold text-primary text-sm flex-shrink-0">
@@ -459,7 +326,6 @@ export default function AddExpense() {
                             )}
                           </div>
                           
-                          {/* Custom amount input for exact split */}
                           {isSelected && splitType === 'exact' && (
                             <div className="px-3 pb-3 pl-14">
                               <div className="flex items-center gap-2">
@@ -478,12 +344,9 @@ export default function AddExpense() {
                       );
                     })}
                     
-                    {/* Custom amount total indicator */}
                     {splitType === 'exact' && amount && (
                       <div className={`text-sm font-medium text-center p-2 rounded-lg ${
-                        Math.abs(customTotal - parseFloat(amount)) < 0.01
-                          ? 'bg-success/10 text-success'
-                          : 'bg-destructive/10 text-destructive'
+                        Math.abs(customTotal - parseFloat(amount)) < 0.01 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                       }`}>
                         Total: ₹{customTotal.toFixed(2)} / ₹{parseFloat(amount).toFixed(2)}
                         {Math.abs(customTotal - parseFloat(amount)) >= 0.01 && (
@@ -499,30 +362,12 @@ export default function AddExpense() {
             {/* Notes */}
             <div className="space-y-2">
               <Label>Notes (Optional)</Label>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any additional notes..."
-                className="rounded-xl min-h-[80px]"
-              />
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any additional notes..." className="rounded-xl min-h-[80px]" />
             </div>
 
-            {/* Submit Button */}
-            <Button
-              onClick={handleSubmit}
-              variant="gradient"
-              size="xl"
-              className="w-full h-12 rounded-xl"
-              disabled={isSubmitting || !selectedGroup || !description || !amount || selectedMembers.length === 0}
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <Receipt className="w-5 h-5" />
-                  Add Expense
-                </>
-              )}
+            {/* Submit */}
+            <Button onClick={handleSubmit} variant="gradient" size="lg" className="w-full h-12 rounded-xl" disabled={isSubmitting || !selectedGroup || !description || !amount || selectedMembers.length === 0}>
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (<><Receipt className="w-5 h-5" /> Add Expense</>)}
             </Button>
           </motion.div>
         )}
