@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Users, Plus, Receipt, User } from 'lucide-react';
+import { Home, Users, Plus, Wallet, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: Home, label: 'Home', path: '/dashboard' },
   { icon: Users, label: 'Groups', path: '/groups' },
   { icon: Plus, label: 'Add', path: '/add', isAction: true },
-  { icon: Receipt, label: 'Activity', path: '/activity' },
+  { icon: Wallet, label: 'Budget', path: '/personal-budget' },
   { icon: User, label: 'Profile', path: '/profile' },
 ];
 

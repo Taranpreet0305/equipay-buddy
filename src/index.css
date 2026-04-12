@@ -146,6 +146,10 @@
 }
 
 @layer components {
+  .hero-dark-bg {
+    background: linear-gradient(180deg, hsl(250, 40%, 12%) 0%, hsl(240, 30%, 8%) 100%);
+  }
+
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
     box-shadow: var(--shadow-lg);

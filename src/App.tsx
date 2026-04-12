@@ -33,8 +33,9 @@ function LoadingScreen() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <div className="animate-pulse">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gradient tracking-tight" style={{ fontFamily: 'Space Grotesk' }}>
-            EquiPay
+          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight" style={{ fontFamily: 'Space Grotesk' }}>
+            <span className="text-foreground">Equi</span>
+            <span className="text-primary">Pay</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-2">Loading...</p>
         </div>
