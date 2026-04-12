@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { Users, Receipt, Globe, MessageCircle, Sparkles, CreditCard, ArrowRight, Shield, WifiOff, Download, Zap, TrendingUp, Wallet } from 'lucide-react';
+import { Users, Receipt, Globe, MessageCircle, Sparkles, CreditCard, ArrowRight, Shield, WifiOff, Download, Zap, TrendingUp, Wallet, ChevronDown } from 'lucide-react';
 import { useRef } from 'react';
 
 const features = [
@@ -55,56 +55,69 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section - Full screen centered */}
-      <section className="min-h-screen flex items-center justify-center pt-16 relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-10" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      {/* Hero Section - Dark purple immersive background like reference image */}
+      <section className="min-h-screen flex flex-col items-center justify-center pt-16 relative overflow-hidden hero-dark-bg">
+        {/* Subtle glow effects */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full opacity-20" style={{ background: 'radial-gradient(ellipse, hsl(250, 76%, 50%) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[300px] rounded-full opacity-10" style={{ background: 'radial-gradient(ellipse, hsl(280, 72%, 50%) 0%, transparent 70%)' }} />
         
-        <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 py-20 text-center">
+        <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center flex-1 flex flex-col items-center justify-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Animated app name */}
+            {/* App name - white "Equi" + purple "Pay" like the reference */}
             <motion.h1
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, type: 'spring', stiffness: 100 }}
-              className="text-6xl sm:text-7xl lg:text-8xl font-bold text-gradient mb-4 tracking-tight"
+              className="text-7xl sm:text-8xl lg:text-9xl font-bold mb-6 tracking-tight"
               style={{ fontFamily: 'Space Grotesk' }}
             >
-              EquiPay
+              <span className="text-white">Equi</span>
+              <span style={{ color: 'hsl(250, 76%, 70%)' }}>Pay</span>
             </motion.h1>
             
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-lg sm:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+              className="text-lg sm:text-xl lg:text-2xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed"
             >
-              Expense splitting & tracking app. Split costs with friends, scan receipts with AI, and settle up instantly.
+              The ultimate expense splitting and tracking app. Fair, fast, and powered by AI.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
               <Link to="/auth">
-                <Button variant="gradient" size="lg" className="rounded-full h-14 px-8 text-base shadow-glow">
-                  Get Started Free
+                <Button size="lg" className="rounded-full h-14 px-10 text-base shadow-glow bg-primary hover:bg-primary/90 text-white">
+                  Get Started
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="pb-8 text-white/40 text-xs tracking-[0.3em] uppercase flex flex-col items-center gap-2"
+        >
+          <span>Scroll to explore</span>
+          <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+            <ChevronDown className="w-4 h-4" />
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* Features Section - List tiles */}
+      {/* Features Section */}
       <section className="min-h-screen flex items-center py-20">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 w-full">
           <motion.div
