@@ -9,6 +9,7 @@ export interface ProfileDB {
   phone: string | null;
   photo_url: string | null;
   upi_id: string | null;
+  username: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -71,8 +72,6 @@ export interface NotificationDB {
   created_at: string;
 }
 
-
-
 // Auth functions
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const redirectUrl = `${window.location.origin}/`;
@@ -99,7 +98,6 @@ export async function signInWithEmail(email: string, password: string) {
   
   return { data, error };
 }
-
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
@@ -158,7 +156,7 @@ export async function searchProfiles(query: string, excludeUserIds: string[] = [
   let queryBuilder = supabase
     .from('profiles')
     .select('*')
-    .or(`display_name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%`)
+    .or(`display_name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%,username.ilike.%${sanitizedQuery}%`)
     .limit(10);
   
   if (validExcludeIds.length > 0) {
@@ -211,7 +209,6 @@ export async function getGroupWithMembers(groupId: string) {
 }
 
 export async function createGroup(name: string, description: string | null, createdBy: string) {
-  // First create the group
   const { data: group, error: groupError } = await supabase
     .from('groups')
     .insert({ name, description, created_by: createdBy })
@@ -220,7 +217,6 @@ export async function createGroup(name: string, description: string | null, crea
   
   if (groupError || !group) return { data: null, error: groupError };
   
-  // Add creator as member
   const { error: memberError } = await supabase
     .from('group_members')
     .insert({ group_id: group.id, user_id: createdBy });
@@ -288,7 +284,6 @@ export async function createExpense(
   notes?: string,
   receiptUrl?: string
 ) {
-  // Create expense
   const { data: expense, error: expenseError } = await supabase
     .from('expenses')
     .insert({
@@ -306,7 +301,6 @@ export async function createExpense(
   
   if (expenseError || !expense) return { data: null, error: expenseError };
   
-  // Create splits
   const splitInserts = splits.map(split => ({
     expense_id: expense.id,
     user_id: split.userId,
@@ -321,15 +315,12 @@ export async function createExpense(
     .insert(splitInserts);
   
   if (splitsError) {
-    // Rollback expense if splits fail
     await supabase.from('expenses').delete().eq('id', expense.id);
     return { data: null, error: splitsError };
   }
   
   return { data: expense as ExpenseDB, error: null };
 }
-
-
 
 // Notifications
 export async function getUserNotifications(userId: string) {
