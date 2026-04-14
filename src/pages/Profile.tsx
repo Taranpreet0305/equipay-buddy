@@ -54,7 +54,9 @@ export default function Profile() {
     settledCount: 0,
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [upiId, setUpiId] = useState(profile?.upi_id || '');
+  const [username, setUsername] = useState(profile?.username || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const isDark = theme === 'dark';
@@ -177,6 +179,9 @@ export default function Profile() {
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold mt-2.5 sm:mt-3 truncate px-4">
               {profile?.display_name || 'User'}
             </h1>
+            {(profile as any)?.username && (
+              <p className="text-xs opacity-60 mt-0.5">@{(profile as any).username}</p>
+            )}
             <p className="text-xs sm:text-sm opacity-80 mt-0.5 truncate px-4">{user?.email}</p>
             {profile?.phone && (
               <p className="text-[10px] sm:text-xs opacity-60 mt-0.5">{profile.phone}</p>
@@ -291,6 +296,73 @@ export default function Profile() {
               </div>
             </motion.div>
           )}
+
+          {/* Username */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.19 }}
+            className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50"
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <Label className="font-semibold text-xs sm:text-sm">Username</Label>
+              <button 
+                onClick={() => setIsEditingUsername(!isEditingUsername)}
+                className="text-primary text-xs font-medium flex items-center gap-1"
+              >
+                <Edit2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                {isEditingUsername ? 'Cancel' : 'Edit'}
+              </button>
+            </div>
+            {isEditingUsername ? (
+              <div className="flex gap-2">
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  placeholder="your_username"
+                  className="flex-1 h-9 sm:h-10 rounded-lg text-sm"
+                  maxLength={30}
+                />
+                <Button 
+                  onClick={async () => {
+                    if (!user || !username || username.length < 3) {
+                      toast.error('Username must be at least 3 characters');
+                      return;
+                    }
+                    setIsSaving(true);
+                    try {
+                      const { error } = await updateProfile(user.id, { username } as any);
+                      if (error) throw error;
+                      await refreshProfile();
+                      toast.success('Username updated!');
+                      setIsEditingUsername(false);
+                    } catch (error: any) {
+                      if (error?.message?.includes('unique') || error?.code === '23505') {
+                        toast.error('Username already taken');
+                      } else {
+                        toast.error('Failed to update username');
+                      }
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  }} 
+                  variant="gradient" 
+                  disabled={isSaving} 
+                  size="sm" 
+                  className="h-9 sm:h-10"
+                >
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-foreground font-medium text-xs sm:text-sm">
+                {(profile as any)?.username ? `@${(profile as any).username}` : 'Not set'}
+              </p>
+            )}
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
+              Others can find you by your username
+            </p>
+          </motion.div>
 
           {/* UPI ID */}
           <motion.div
