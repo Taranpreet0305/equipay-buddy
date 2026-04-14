@@ -1,7 +1,7 @@
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ThemeToggleProps {
   variant?: 'default' | 'ghost' | 'outline';
@@ -24,23 +24,38 @@ export function ThemeToggle({
       variant={variant}
       size={size}
       onClick={toggleTheme}
-      className={`relative ${showLabel ? 'gap-2' : ''} ${className}`}
+      className={`relative overflow-hidden ${showLabel ? 'gap-2' : ''} ${className}`}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
-      <motion.div
-        initial={false}
-        animate={{ rotate: isDark ? 180 : 0 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="relative"
-      >
-        {isDark ? (
-          <Moon className="w-4 h-4 sm:w-5 sm:h-5" />
-        ) : (
-          <Sun className="w-4 h-4 sm:w-5 sm:h-5" />
-        )}
-      </motion.div>
+      <div className="relative w-5 h-5">
+        <AnimatePresence mode="wait" initial={false}>
+          {isDark ? (
+            <motion.div
+              key="moon"
+              initial={{ y: -20, opacity: 0, rotate: -90 }}
+              animate={{ y: 0, opacity: 1, rotate: 0 }}
+              exit={{ y: 20, opacity: 0, rotate: 90 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Moon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="sun"
+              initial={{ y: -20, opacity: 0, rotate: 90 }}
+              animate={{ y: 0, opacity: 1, rotate: 0 }}
+              exit={{ y: 20, opacity: 0, rotate: -90 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Sun className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       {showLabel && (
-        <span className="text-sm font-medium">
+        <span className="text-xs sm:text-sm font-medium">
           {isDark ? 'Dark' : 'Light'}
         </span>
       )}

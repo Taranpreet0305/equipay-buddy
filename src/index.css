@@ -6,19 +6,19 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 230 25% 12%;
+    --background: 0 0% 99%;
+    --foreground: 230 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 230 25% 12%;
+    --card-foreground: 230 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 230 25% 12%;
+    --popover-foreground: 230 25% 15%;
 
     --primary: 250 76% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 20% 95%;
+    --secondary: 240 15% 95%;
     --secondary-foreground: 230 25% 20%;
 
     --muted: 220 14% 93%;
@@ -220,13 +220,13 @@
 
 @media screen and (max-width: 359px) {
   html {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 
 @media screen and (max-width: 480px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 }
