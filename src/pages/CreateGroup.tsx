@@ -165,7 +165,7 @@ export default function CreateGroup() {
               <Input
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search by name or email..."
+                placeholder="Search by name, email, or username..."
                 className="pl-9 sm:pl-10 h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm"
               />
               {isSearching && (
@@ -196,7 +196,9 @@ export default function CreateGroup() {
                       </Avatar>
                       <div className="flex-1 text-left min-w-0">
                         <p className="font-medium text-foreground text-sm truncate">{userData.display_name}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userData.email}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                          {(userData as any).username ? `@${(userData as any).username} · ` : ''}{userData.email}
+                        </p>
                       </div>
                       <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
                     </button>
