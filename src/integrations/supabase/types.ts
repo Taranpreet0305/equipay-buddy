@@ -374,6 +374,7 @@ export type Database = {
           updated_at: string
           upi_id: string | null
           user_id: string
+          username: string | null
         }
         Insert: {
           created_at?: string
@@ -386,6 +387,7 @@ export type Database = {
           updated_at?: string
           upi_id?: string | null
           user_id: string
+          username?: string | null
         }
         Update: {
           created_at?: string
@@ -398,6 +400,7 @@ export type Database = {
           updated_at?: string
           upi_id?: string | null
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
