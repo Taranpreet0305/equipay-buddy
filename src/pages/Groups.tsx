@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,16 +6,34 @@ import { Input } from '@/components/ui/input';
 import { Plus, Search, Users, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Groups() {
   const { groups } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [joinCode, setJoinCode] = useState('');
+  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 
-  const filteredGroups = groups.filter(g => 
+  useEffect(() => {
+    const fetchMemberCounts = async () => {
+      if (groups.length === 0) return;
+      const counts: Record<string, number> = {};
+      const results = await Promise.all(
+        groups.map(g =>
+          supabase.from('group_members').select('id', { count: 'exact', head: true }).eq('group_id', g.id)
+        )
+      );
+      groups.forEach((g, i) => {
+        counts[g.id] = results[i].count || 0;
+      });
+      setMemberCounts(counts);
+    };
+    fetchMemberCounts();
+  }, [groups]);
+
+  const filteredGroups = groups.filter(g =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -25,7 +43,6 @@ export default function Groups() {
       toast.error('Please enter an invite code');
       return;
     }
-
     navigate(`/join/${encodeURIComponent(normalizedCode)}`);
   };
 
@@ -70,9 +87,7 @@ export default function Groups() {
               placeholder="Enter invite code"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleJoinByCode();
-              }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleJoinByCode(); }}
               className="h-10 rounded-lg bg-secondary border-0 text-sm"
             />
             <Button onClick={handleJoinByCode} size="sm" variant="gradient" className="h-10 px-3">
@@ -97,7 +112,7 @@ export default function Groups() {
           />
         </motion.div>
 
-        {/* Groups List */}
+        {/* Groups Grid */}
         {filteredGroups.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -123,29 +138,23 @@ export default function Groups() {
             )}
           </motion.div>
         ) : (
-          <div className="space-y-2 sm:space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {filteredGroups.map((group, index) => (
               <motion.div
                 key={group.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
               >
                 <Link to={`/groups/${group.id}`}>
-                  <div className="bg-card rounded-xl p-3 sm:p-3.5 shadow-soft border border-border/50 hover:shadow-elevated transition-shadow active:scale-[0.98]">
-                    <div className="flex items-center gap-2 sm:gap-2.5">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
-                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground truncate text-xs sm:text-sm">{group.name}</h3>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                          {group.description || 'Tap to view details'}
-                        </p>
-                      </div>
-
-                      <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <div className="bg-card rounded-xl p-3 sm:p-4 shadow-soft border border-border/50 hover:shadow-elevated transition-all active:scale-[0.97] h-full flex flex-col items-center text-center gap-2">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl gradient-primary flex items-center justify-center">
+                      <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+                    </div>
+                    <h3 className="font-semibold text-foreground text-xs sm:text-sm truncate w-full">{group.name}</h3>
+                    <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
+                      <Users className="w-3 h-3" />
+                      <span>{memberCounts[group.id] || 0} members</span>
                     </div>
                   </div>
                 </Link>
