@@ -59,8 +59,8 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="min-h-screen flex flex-col items-center justify-center pt-14 sm:pt-16 relative overflow-hidden hero-dark-bg">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[300px] sm:h-[400px] rounded-full opacity-20" style={{ background: 'radial-gradient(ellipse, hsl(250, 76%, 50%) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-0 left-1/4 w-[300px] sm:w-[500px] h-[200px] sm:h-[300px] rounded-full opacity-10" style={{ background: 'radial-gradient(ellipse, hsl(280, 72%, 50%) 0%, transparent 70%)' }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[300px] sm:h-[400px] rounded-full opacity-15" style={{ background: 'radial-gradient(ellipse, hsl(230, 65%, 50%) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-1/4 w-[300px] sm:w-[500px] h-[200px] sm:h-[300px] rounded-full opacity-10" style={{ background: 'radial-gradient(ellipse, hsl(250, 55%, 45%) 0%, transparent 70%)' }} />
         
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-8 text-center flex-1 flex flex-col items-center justify-center">
           <motion.div
