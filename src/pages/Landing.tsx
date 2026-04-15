@@ -76,7 +76,7 @@ export default function Landing() {
               style={{ fontFamily: 'Space Grotesk' }}
             >
               <span className="text-white">Equi</span>
-              <span style={{ color: 'hsl(250, 76%, 70%)' }}>Pay</span>
+              <span style={{ color: 'hsl(230, 65%, 68%)' }}>Pay</span>
             </motion.h1>
             
             <motion.p
