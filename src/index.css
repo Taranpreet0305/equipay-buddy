@@ -147,7 +147,7 @@
 
 @layer components {
   .hero-dark-bg {
-    background: linear-gradient(180deg, hsl(250, 40%, 12%) 0%, hsl(240, 30%, 8%) 100%);
+    background: linear-gradient(180deg, hsl(222, 30%, 10%) 0%, hsl(230, 25%, 7%) 100%);
   }
 
   .glass-card {
