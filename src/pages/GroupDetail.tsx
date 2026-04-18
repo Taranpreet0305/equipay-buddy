@@ -264,6 +264,14 @@ export default function GroupDetail() {
         isOpen={isInviteOpen}
         onClose={() => setIsInviteOpen(false)}
       />
+
+      <MemberProfileDialog
+        open={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+        member={selectedMember}
+        groupId={group.id}
+        currentUserId={user?.id}
+      />
     </PageLayout>
   );
 }
