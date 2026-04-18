@@ -176,27 +176,41 @@ export default function Profile() {
     }
   }, [user, groups.length]);
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file || !user) return;
 
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be under 5MB');
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be under 10MB');
       return;
     }
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCropSrc(reader.result as string);
+      setShowCropDialog(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
+    if (!user) return;
     setIsUploadingAvatar(true);
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const path = `${user.id}/avatar-${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, file, { cacheControl: '3600', upsert: true });
+        .upload(path, blob, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'image/jpeg',
+        });
       if (uploadError) throw uploadError;
 
       const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
@@ -207,11 +221,12 @@ export default function Profile() {
 
       await refreshProfile();
       toast.success('Photo updated');
+      setShowCropDialog(false);
+      setCropSrc(null);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update photo');
     } finally {
       setIsUploadingAvatar(false);
-      e.target.value = '';
     }
   };
 
