@@ -1,0 +1,1 @@
+UPDATE public.profiles SET photo_url = NULL WHERE photo_url LIKE 'data:%';
