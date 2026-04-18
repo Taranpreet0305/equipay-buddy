@@ -318,6 +318,53 @@ export default function Profile() {
                 )}
               </div>
             </div>
+
+            {/* Bio */}
+            <div className="mt-3 pt-3 border-t border-border/50">
+              {editing === 'bio' ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell your group members a bit about yourself..."
+                    className="text-sm rounded-lg resize-none min-h-[72px]"
+                    maxLength={300}
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-muted-foreground">{bio.length}/300</span>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" variant="ghost" className="h-8" onClick={cancelEdit}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" variant="default" className="h-8" onClick={() => handleSave('bio')} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => startEdit('bio')}
+                  className="w-full text-left flex items-start gap-2 group"
+                >
+                  <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">About</p>
+                    {(profile as any)?.bio ? (
+                      <p className="text-xs sm:text-sm text-foreground whitespace-pre-wrap break-words">
+                        {(profile as any).bio}
+                      </p>
+                    ) : (
+                      <p className="text-xs sm:text-sm text-muted-foreground italic group-hover:text-primary transition">
+                        Add a short bio so group members can learn about you
+                      </p>
+                    )}
+                  </div>
+                  <Edit2 className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition flex-shrink-0 mt-0.5" />
+                </button>
+              )}
+            </div>
           </motion.div>
         </div>
 
