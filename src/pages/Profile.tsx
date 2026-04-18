@@ -290,7 +290,7 @@ export default function Profile() {
                     className="hidden"
                     accept="image/*"
                     disabled={isUploadingAvatar}
-                    onChange={handleAvatarUpload}
+                    onChange={handleAvatarSelect}
                   />
                 </label>
               </div>
