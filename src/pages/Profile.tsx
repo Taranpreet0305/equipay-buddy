@@ -111,6 +111,10 @@ export default function Profile() {
       toast.error('Username must be at least 3 characters');
       return;
     }
+    if (field === 'bio' && bio.length > 300) {
+      toast.error('Bio must be 300 characters or less');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -119,6 +123,8 @@ export default function Profile() {
           ? { display_name: displayName.trim() }
           : field === 'username'
           ? { username }
+          : field === 'bio'
+          ? { bio: bio.trim() || null }
           : { upi_id: upiId };
 
       const { error } = await updateProfile(user.id, payload);
