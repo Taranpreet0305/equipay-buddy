@@ -629,6 +629,17 @@ export default function Profile() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AvatarCropDialog
+        open={showCropDialog}
+        imageSrc={cropSrc}
+        isUploading={isUploadingAvatar}
+        onCancel={() => {
+          setShowCropDialog(false);
+          setCropSrc(null);
+        }}
+        onConfirm={handleCroppedUpload}
+      />
     </PageLayout>
   );
 }
