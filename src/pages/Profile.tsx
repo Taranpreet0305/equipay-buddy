@@ -176,24 +176,59 @@ export default function Profile() {
     }
   }, [user, groups.length]);
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      setIsSaving(true);
-      try {
-        const { error } = await updateProfile(user.id, { photo_url: reader.result as string });
-        if (error) throw error;
-        await refreshProfile();
-        toast.success('Photo updated');
-      } catch {
-        toast.error('Failed to update photo');
-      } finally {
-        setIsSaving(false);
-      }
-    };
-    reader.readAsDataURL(file);
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { cacheControl: '3600', upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const publicUrl = `${publicData.publicUrl}?t=${Date.now()}`;
+
+      const { error } = await updateProfile(user.id, { photo_url: publicUrl });
+      if (error) throw error;
+
+      await refreshProfile();
+      toast.success('Photo updated');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update photo');
+    } finally {
+      setIsUploadingAvatar(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.rpc('delete_my_account' as any);
+      if (error) throw error;
+      await supabase.auth.signOut();
+      toast.success('Account deleted');
+      navigate('/');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete account');
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const stats = [
