@@ -364,6 +364,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           created_at: string
           display_name: string
           email: string
@@ -377,6 +378,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           display_name: string
           email: string
@@ -390,6 +392,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          bio?: string | null
           created_at?: string
           display_name?: string
           email?: string
@@ -547,6 +550,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_my_account: { Args: never; Returns: undefined }
       is_group_member: {
         Args: { p_group_id: string; p_user_id: string }
         Returns: boolean

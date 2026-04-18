@@ -7,6 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Camera,
   Edit2,
@@ -25,13 +36,15 @@ import {
   Check,
   X,
   AtSign,
-  User as UserIcon,
+  FileText,
+  Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { updateProfile } from '@/lib/database';
 import { useTheme } from '@/hooks/useTheme';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
 const menuItems = [
   { icon: CreditCard, label: 'Payment Methods', path: '/payment-methods' },
@@ -39,7 +52,7 @@ const menuItems = [
   { icon: HelpCircle, label: 'Help & Support', path: '/help' },
 ];
 
-type EditField = 'name' | 'username' | 'upi' | null;
+type EditField = 'name' | 'username' | 'upi' | 'bio' | null;
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -63,14 +76,19 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [upiId, setUpiId] = useState(profile?.upi_id || '');
   const [username, setUsername] = useState(profile?.username || '');
+  const [bio, setBio] = useState((profile as any)?.bio || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const isDark = theme === 'dark';
 
   useEffect(() => {
     setDisplayName(profile?.display_name || '');
     setUpiId(profile?.upi_id || '');
     setUsername(profile?.username || '');
+    setBio((profile as any)?.bio || '');
   }, [profile]);
 
   const startEdit = (field: EditField) => setEditing(field);
@@ -79,6 +97,7 @@ export default function Profile() {
     setDisplayName(profile?.display_name || '');
     setUpiId(profile?.upi_id || '');
     setUsername(profile?.username || '');
+    setBio((profile as any)?.bio || '');
   };
 
   const handleSave = async (field: Exclude<EditField, null>) => {
@@ -92,6 +111,10 @@ export default function Profile() {
       toast.error('Username must be at least 3 characters');
       return;
     }
+    if (field === 'bio' && bio.length > 300) {
+      toast.error('Bio must be 300 characters or less');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -100,6 +123,8 @@ export default function Profile() {
           ? { display_name: displayName.trim() }
           : field === 'username'
           ? { username }
+          : field === 'bio'
+          ? { bio: bio.trim() || null }
           : { upi_id: upiId };
 
       const { error } = await updateProfile(user.id, payload);
@@ -151,24 +176,59 @@ export default function Profile() {
     }
   }, [user, groups.length]);
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      setIsSaving(true);
-      try {
-        const { error } = await updateProfile(user.id, { photo_url: reader.result as string });
-        if (error) throw error;
-        await refreshProfile();
-        toast.success('Photo updated');
-      } catch {
-        toast.error('Failed to update photo');
-      } finally {
-        setIsSaving(false);
-      }
-    };
-    reader.readAsDataURL(file);
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { cacheControl: '3600', upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const publicUrl = `${publicData.publicUrl}?t=${Date.now()}`;
+
+      const { error } = await updateProfile(user.id, { photo_url: publicUrl });
+      if (error) throw error;
+
+      await refreshProfile();
+      toast.success('Photo updated');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update photo');
+    } finally {
+      setIsUploadingAvatar(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.rpc('delete_my_account' as any);
+      if (error) throw error;
+      await supabase.auth.signOut();
+      toast.success('Account deleted');
+      navigate('/');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete account');
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const stats = [
@@ -201,12 +261,17 @@ export default function Profile() {
                   htmlFor="avatar-upload"
                   className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer hover:bg-primary/90 transition shadow-md ring-2 ring-card"
                 >
-                  <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  {isUploadingAvatar ? (
+                    <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
+                  ) : (
+                    <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  )}
                   <input
                     type="file"
                     id="avatar-upload"
                     className="hidden"
                     accept="image/*"
+                    disabled={isUploadingAvatar}
                     onChange={handleAvatarUpload}
                   />
                 </label>
@@ -252,6 +317,53 @@ export default function Profile() {
                   <p className="text-[10px] sm:text-xs text-muted-foreground/80 mt-0.5 truncate">{profile.phone}</p>
                 )}
               </div>
+            </div>
+
+            {/* Bio */}
+            <div className="mt-3 pt-3 border-t border-border/50">
+              {editing === 'bio' ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell your group members a bit about yourself..."
+                    className="text-sm rounded-lg resize-none min-h-[72px]"
+                    maxLength={300}
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-muted-foreground">{bio.length}/300</span>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" variant="ghost" className="h-8" onClick={cancelEdit}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" variant="default" className="h-8" onClick={() => handleSave('bio')} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => startEdit('bio')}
+                  className="w-full text-left flex items-start gap-2 group"
+                >
+                  <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">About</p>
+                    {(profile as any)?.bio ? (
+                      <p className="text-xs sm:text-sm text-foreground whitespace-pre-wrap break-words">
+                        {(profile as any).bio}
+                      </p>
+                    ) : (
+                      <p className="text-xs sm:text-sm text-muted-foreground italic group-hover:text-primary transition">
+                        Add a short bio so group members can learn about you
+                      </p>
+                    )}
+                  </div>
+                  <Edit2 className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition flex-shrink-0 mt-0.5" />
+                </button>
+              )}
             </div>
           </motion.div>
         </div>
@@ -437,11 +549,12 @@ export default function Profile() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
+            className="space-y-2"
           >
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full h-11 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 text-sm"
+              className="w-full h-11 text-sm"
               disabled={isLoggingOut}
             >
               {isLoggingOut ? (
@@ -453,9 +566,51 @@ export default function Profile() {
                 </>
               )}
             </Button>
+
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="ghost"
+              className="w-full h-11 text-destructive hover:text-destructive hover:bg-destructive/10 text-sm"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
           </motion.div>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your profile, remove you from all groups, and erase your
+              expenses, splits, settlements, and messages. Groups you created will be deleted along
+              with their data. <strong className="text-destructive">This cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteAccount();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Yes, delete my account'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageLayout>
   );
 }
