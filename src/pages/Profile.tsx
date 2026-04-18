@@ -52,7 +52,7 @@ const menuItems = [
   { icon: HelpCircle, label: 'Help & Support', path: '/help' },
 ];
 
-type EditField = 'name' | 'username' | 'upi' | null;
+type EditField = 'name' | 'username' | 'upi' | 'bio' | null;
 
 export default function Profile() {
   const navigate = useNavigate();
