@@ -45,6 +45,7 @@ import { updateProfile } from '@/lib/database';
 import { useTheme } from '@/hooks/useTheme';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
+import { AvatarCropDialog } from '@/components/profile/AvatarCropDialog';
 
 const menuItems = [
   { icon: CreditCard, label: 'Payment Methods', path: '/payment-methods' },
@@ -82,6 +83,8 @@ export default function Profile() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const isDark = theme === 'dark';
 
   useEffect(() => {
