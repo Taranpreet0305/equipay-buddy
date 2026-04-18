@@ -76,14 +76,19 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [upiId, setUpiId] = useState(profile?.upi_id || '');
   const [username, setUsername] = useState(profile?.username || '');
+  const [bio, setBio] = useState((profile as any)?.bio || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const isDark = theme === 'dark';
 
   useEffect(() => {
     setDisplayName(profile?.display_name || '');
     setUpiId(profile?.upi_id || '');
     setUsername(profile?.username || '');
+    setBio((profile as any)?.bio || '');
   }, [profile]);
 
   const startEdit = (field: EditField) => setEditing(field);
@@ -92,6 +97,7 @@ export default function Profile() {
     setDisplayName(profile?.display_name || '');
     setUpiId(profile?.upi_id || '');
     setUsername(profile?.username || '');
+    setBio((profile as any)?.bio || '');
   };
 
   const handleSave = async (field: Exclude<EditField, null>) => {
