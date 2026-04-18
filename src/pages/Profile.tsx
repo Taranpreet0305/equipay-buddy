@@ -261,12 +261,17 @@ export default function Profile() {
                   htmlFor="avatar-upload"
                   className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer hover:bg-primary/90 transition shadow-md ring-2 ring-card"
                 >
-                  <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  {isUploadingAvatar ? (
+                    <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
+                  ) : (
+                    <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  )}
                   <input
                     type="file"
                     id="avatar-upload"
                     className="hidden"
                     accept="image/*"
+                    disabled={isUploadingAvatar}
                     onChange={handleAvatarUpload}
                   />
                 </label>
