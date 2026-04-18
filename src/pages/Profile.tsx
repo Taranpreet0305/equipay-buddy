@@ -549,11 +549,12 @@ export default function Profile() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
+            className="space-y-2"
           >
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full h-11 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 text-sm"
+              className="w-full h-11 text-sm"
               disabled={isLoggingOut}
             >
               {isLoggingOut ? (
@@ -565,9 +566,51 @@ export default function Profile() {
                 </>
               )}
             </Button>
+
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="ghost"
+              className="w-full h-11 text-destructive hover:text-destructive hover:bg-destructive/10 text-sm"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
           </motion.div>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your profile, remove you from all groups, and erase your
+              expenses, splits, settlements, and messages. Groups you created will be deleted along
+              with their data. <strong className="text-destructive">This cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteAccount();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Yes, delete my account'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageLayout>
   );
 }
