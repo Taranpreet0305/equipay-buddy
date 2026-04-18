@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { getGroupWithMembers, getGroupExpenses, GroupDB, GroupMemberDB, ExpenseDB } from '@/lib/database';
 import { GroupBalances } from '@/components/group/GroupBalances';
+import { MemberProfileDialog } from '@/components/group/MemberProfileDialog';
 import { exportGroupExpensesCSV } from '@/lib/exportCSV';
 
 export default function GroupDetail() {
@@ -29,6 +30,7 @@ export default function GroupDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
 
   useEffect(() => {
     if (id) {
@@ -212,16 +214,20 @@ export default function GroupDetail() {
                 </button>
               </div>
               {members.map((member) => (
-                <div key={member.id} className="bg-card rounded-lg p-3 shadow-soft border border-border/50 flex items-start gap-3">
+                <button
+                  key={member.id}
+                  onClick={() => member.profiles && setSelectedMember({ ...member.profiles, user_id: member.user_id })}
+                  className="w-full text-left bg-card rounded-lg p-3 shadow-soft border border-border/50 flex items-start gap-3 hover:border-primary/40 hover:bg-card/80 transition overflow-hidden"
+                >
                   <Avatar className="w-9 h-9 border border-primary/10 flex-shrink-0">
                     <AvatarImage src={member.profiles?.photo_url || undefined} />
                     <AvatarFallback className="bg-primary/5 text-primary text-xs">
                       {member.profiles?.display_name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="font-semibold text-xs truncate">{member.profiles?.display_name}</p>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="font-semibold text-xs truncate min-w-0">{member.profiles?.display_name}</p>
                       {member.user_id === user?.id && (
                         <span className="text-[8px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full flex-shrink-0">YOU</span>
                       )}
@@ -230,12 +236,12 @@ export default function GroupDetail() {
                         {member.profiles?.upi_id ? `UPI: ${member.profiles.upi_id}` : 'No UPI ID set'}
                     </p>
                     {(member.profiles as any)?.bio && (
-                      <p className="text-[11px] text-foreground/80 mt-1 whitespace-pre-wrap break-words line-clamp-3">
+                      <p className="text-[11px] text-foreground/80 mt-1 break-words line-clamp-2 whitespace-pre-wrap">
                         {(member.profiles as any).bio}
                       </p>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </TabsContent>
           </Tabs>
